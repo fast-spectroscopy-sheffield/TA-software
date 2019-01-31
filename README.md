@@ -9,7 +9,7 @@ For use with the double-line VIS cameras detecting wavelengths in the visible.
 
 #### Version Information
 Current version: 1.01  
-David Bossanyi(30-01-2019)  
+David Bossanyi (30-01-2019)  
 <dgbossanyi1@sheffield.ac.uk>
 
 #### Current Status
