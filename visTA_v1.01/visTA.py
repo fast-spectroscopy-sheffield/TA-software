@@ -68,6 +68,7 @@ class Editor(QtGui.QMainWindow):
         self.ui.longstage_t0.valueChanged.connect(self.update_longstage_t0)
         self.ui.pinklaser_t0.valueChanged.connect(self.update_pinklaser_t0)
         self.ui.num_shots.valueChanged.connect(self.update_num_shots)
+        self.ui.exp_time_us.valueChanged.connect(self.update_exp_time_us)
         self.ui.num_sweeps.valueChanged.connect(self.update_num_sweeps)
         self.ui.delay_type_list.currentIndexChanged.connect(self.update_delay_type)
         self.ui.delay_type_list.addItem('Short Stage')
@@ -123,6 +124,7 @@ class Editor(QtGui.QMainWindow):
         self.ui.d_longstage_t0.valueChanged.connect(self.update_d_longstage_t0)
         self.ui.d_pinklaser_t0.valueChanged.connect(self.update_d_pinklaser_t0)
         self.ui.d_num_shots.valueChanged.connect(self.update_d_num_shots)
+        self.ui.d_exp_time_us.valueChanged.connect(self.update_d_exp_time_us)
         self.ui.d_delay_type_list.currentIndexChanged.connect(self.update_d_delay_type)
         self.ui.d_delay_type_list.addItem('Short Stage')
         self.ui.d_delay_type_list.addItem('Long Stage')
@@ -175,6 +177,7 @@ class Editor(QtGui.QMainWindow):
             self.ui.calib_wave_low.setValue(500)
             self.ui.calib_wave_high.setValue(800)
             self.ui.num_shots.setValue(200)
+            self.ui.exp_time_us.setValue(10)
             self.ui.num_sweeps.setValue(500)
             self.ui.kinetic_pixel.setValue(100)
             self.ui.spectra_timestep.setValue(4)
@@ -194,6 +197,7 @@ class Editor(QtGui.QMainWindow):
             self.ui.d_use_linear_corr.setChecked(1)
             self.ui.d_threshold_pixel.setValue(400)
             self.ui.d_threshold_value.setValue(15000)
+            self.ui.d_exp_time_us.setValue(800)
             self.ui.d_time.setValue(1)
         else:
             self.ui.cutoff_pixel_low.setValue(pl[0])
@@ -204,6 +208,7 @@ class Editor(QtGui.QMainWindow):
             self.ui.calib_wave_high.setValue(pl[5])
             self.ui.num_shots.setValue(pl[6])
             self.ui.num_sweeps.setValue(pl[7])
+            self.ui.exp_time_us.setValue(pl[26])
             self.ui.kinetic_pixel.setValue(pl[8])
             self.ui.spectra_timestep.setValue(int(pl[9]))
             self.ui.delay_type_list.setCurrentIndex(pl[10])
@@ -221,6 +226,7 @@ class Editor(QtGui.QMainWindow):
             self.ui.d_refman_vertrical_stretch.setValue(pl[21])
             self.ui.d_threshold_pixel.setValue(pl[22])
             self.ui.d_threshold_value.setValue(pl[23])
+            self.ui.d_exp_time_us.setValue(pl[27])
             self.ui.d_time.setValue(-100)
         
         # check whether this is actually needed
@@ -234,6 +240,7 @@ class Editor(QtGui.QMainWindow):
         self.update_kinetic_pixel()
         self.update_longstage_t0()
         self.update_num_shots()
+        self.update_exp_time_us()
         self.update_num_sweeps()
         self.update_pinklaser_t0()
         self.update_plot_log_t()
@@ -245,6 +252,7 @@ class Editor(QtGui.QMainWindow):
         self.update_use_calib()
         self.update_use_cutoff()
         self.update_d_time()
+        self.update_d_exp_time_us()
         
     def set_reference_manipulation_maxmin_values(self):
         self.ui.d_refman_horiz_offset.setMinimum(-1000)
@@ -289,8 +297,10 @@ class Editor(QtGui.QMainWindow):
                         self.ui.d_threshold_pixel.value(),
                         self.ui.d_threshold_value.value(),
                         self.ui.d_time.value(),
-                        self.ui.shortstage_t0.value()])
-        np.savetxt(self.lif,output,newline='\r\n')
+                        self.ui.shortstage_t0.value(),
+                        self.ui.exp_time_us.value(),
+                        self.ui.d_exp_time_us.value()])
+        np.savetxt(self.lif,output)  # newline=???
 
         
     def exec_folder_btn(self):
@@ -470,6 +480,16 @@ class Editor(QtGui.QMainWindow):
         if self.idle is True:
             self.num_shots = self.ui.d_num_shots.value()
             self.ui.num_shots.setValue(self.num_shots)
+        return
+    
+    def update_exp_time_us(self):
+        '''executes when the exposure time is updated - DOES NOT keep consistent between tabs'''
+        self.exp_time_us = self.ui.exp_time_us.value()
+        return
+    
+    def update_d_exp_time_us(self):
+        '''executes when the diagnostics exposure time is updated - DOES NOT keep consistent between tabs'''
+        self.d_exp_time_us = self.ui.d_exp_time_us.value()
         return
             
     def update_num_sweeps(self):  # What is the number of sweeps? Is it the number of runs of the experiment?
@@ -1030,7 +1050,7 @@ class Editor(QtGui.QMainWindow):
         self.camera.data_ready.connect(self.post_acquire_bgd)
         
         if self.ui.test_run_btn.isChecked() is False:
-            self.camera.Initialize(number_of_scans=self.num_shots*10,exposure_time_us=10)##,use_ir_gain=self.ui.d_use_ir_gain.isChecked())
+            self.camera.Initialize(number_of_scans=self.num_shots*10,exposure_time_us=self.exp_time_us)##,use_ir_gain=self.ui.d_use_ir_gain.isChecked())
             self.message_block()
             self.append_history('Taking Background')
             self.acquire_bgd()
@@ -1044,7 +1064,7 @@ class Editor(QtGui.QMainWindow):
         
         self.camera.data_ready.disconnect(self.post_acquire_bgd)
         self.camera.data_ready.connect(self.post_acquire)
-        self.camera.Initialize(number_of_scans=self.num_shots,exposure_time_us=10)##,use_ir_gain=self.ui.d_use_ir_gain.isChecked())
+        self.camera.Initialize(number_of_scans=self.num_shots,exposure_time_us=self.exp_time_us)##,use_ir_gain=self.ui.d_use_ir_gain.isChecked())
         
         self.append_history('Starting Sweep '+str(self.current_sweep.sweep_index))
         self.ui.sweep_display.display(self.current_sweep.sweep_index+1)
