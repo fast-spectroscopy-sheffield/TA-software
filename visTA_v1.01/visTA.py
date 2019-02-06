@@ -165,6 +165,8 @@ class Editor(QtGui.QMainWindow):
         self.ui.d_use_reference.setChecked(True)
         self.ui.d_use_ir_gain.setChecked(False)
         
+        self.set_reference_manipulation_maxmin_values()
+        
         if preloaded is False:
             self.ui.cutoff_pixel_low.setValue(100)
             self.ui.cutoff_pixel_high.setValue(400)
@@ -243,6 +245,18 @@ class Editor(QtGui.QMainWindow):
         self.update_use_calib()
         self.update_use_cutoff()
         self.update_d_time()
+        
+    def set_reference_manipulation_maxmin_values(self):
+        self.ui.d_refman_horiz_offset.setMinimum(-1000)
+        self.ui.d_refman_horiz_offset.setMaximum(1000)
+        self.ui.d_refman_vertical_offset.setMinimum(-1000)
+        self.ui.d_refman_vertical_offset.setMaximum(1000)
+        self.ui.d_refman_scale_center.setMinimum(0)
+        self.ui.d_refman_scale_center.setMaximum(100)
+        self.ui.d_refman_scale_factor.setMinimum(0)
+        self.ui.d_refman_scale_factor.setMaximum(100)
+        self.ui.d_refman_vertrical_stretch.setMinimum(0)
+        self.ui.d_refman_vertrical_stretch.setMaximum(100)
      
     ###########################################################################
     ###########################################################################
