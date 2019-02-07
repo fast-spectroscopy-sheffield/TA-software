@@ -23,4 +23,4 @@ d refman vertical stretch: 1
 d threshold pixel: 1100
 d threshold value: 15000
 d exposure time us: 800
-d time: -100
+d time: 100

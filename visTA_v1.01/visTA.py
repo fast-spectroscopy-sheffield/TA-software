@@ -197,7 +197,7 @@ class Editor(QtGui.QMainWindow):
             self.ui.d_threshold_pixel.setValue(1100)
             self.ui.d_threshold_value.setValue(15000)
             self.ui.d_exp_time_us.setValue(800)
-            self.ui.d_time.setValue(-100)
+            self.ui.d_time.setValue(100)
             self.ui.d_use_linear_corr.setChecked(1)
         else:
             self.ui.cutoff_pixel_low.setValue(pl['cutoff pixel low'])
