@@ -1,26 +1,26 @@
-cutoff pixel low: 30
-cutoff pixel high: 1000
-calib pixel low: 200
-calib pixel high: 800
-calib wavelength low: 400
-calib wavelength high: 700
-short stage time zero: 0
-long stage time zero: 0
-pink laser time zero: 0
-delay type: 1
-num shots: 200
-num sweeps: 500
-exposure time us: 10
-kinetic pixel: 0
-spectra timestep: 0
-d display mode: 0
-d display mode spectra: 0
-d refman horizontal offset: 0
-d refman scale center: 250
-d refman scale factor: 1
-d refman vertical offset: 0
-d refman vertical stretch: 1
-d threshold pixel: 1100
-d threshold value: 15000
-d exposure time us: 800
-d time: 100
+cutoff pixel low:30
+cutoff pixel high:1000
+calib pixel low:200
+calib pixel high:800
+calib wavelength low:400
+calib wavelength high:700
+short stage time zero:0
+long stage time zero:0
+pink laser time zero:0
+delay type:1
+num shots:200
+num sweeps:500
+exposure time us:10
+kinetic pixel:0
+spectra timestep:0
+d display mode:0
+d display mode spectra:0
+d refman horizontal offset:0
+d refman scale center:100
+d refman scale factor:1
+d refman vertical offset:0
+d refman vertical stretch:1
+d threshold pixel:1100
+d threshold value:15000
+d exposure time us:800
+d time:200

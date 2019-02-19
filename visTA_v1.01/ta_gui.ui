@@ -830,7 +830,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>Exposure Time (µs)</string>
+        <string>Exposure Time (us)</string>
        </property>
       </widget>
      </widget>
@@ -1871,7 +1871,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>Exposure Time (µs)</string>
+        <string>Exposure Time (us)</string>
        </property>
       </widget>
      </widget>

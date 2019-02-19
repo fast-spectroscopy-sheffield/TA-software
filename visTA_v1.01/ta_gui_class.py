@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\Dave\Documents\GitHub\TA-software\visTA_v1.01\ta_gui.ui'
+# Form implementation generated from reading ui file 'C:\Users\Lab_Test\Documents\GitHub\TA-software\visTA_v1.01\ta_gui.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -696,7 +696,7 @@ class Ui_TA_GUI(object):
         self.label_16.setText(_translate("TA_GUI", "Current Sweep"))
         self.label_17.setText(_translate("TA_GUI", "Current Time"))
         self.label_30.setText(_translate("TA_GUI", "Pink Laser Time Zero"))
-        self.label_47.setText(_translate("TA_GUI", "Exposure Time (µs)"))
+        self.label_47.setText(_translate("TA_GUI", "Exposure Time (us)"))
         self.calib_box.setTitle(_translate("TA_GUI", "Calibration"))
         self.label_10.setText(_translate("TA_GUI", "Pixel Low"))
         self.label_11.setText(_translate("TA_GUI", "Wavelength Low"))
@@ -743,7 +743,7 @@ class Ui_TA_GUI(object):
         self.label_41.setText(_translate("TA_GUI", "Display Mode Spectra"))
         self.d_use_ir_gain.setText(_translate("TA_GUI", "IR Gain"))
         self.label_38.setText(_translate("TA_GUI", "Pink Laser Time Zero"))
-        self.label_48.setText(_translate("TA_GUI", "Exposure Time (µs)"))
+        self.label_48.setText(_translate("TA_GUI", "Exposure Time (us)"))
         self.groupBox_13.setTitle(_translate("TA_GUI", "Launch"))
         self.d_run_btn.setText(_translate("TA_GUI", "Run"))
         self.d_exit_btn.setText(_translate("TA_GUI", "Exit"))

@@ -296,7 +296,7 @@ class Editor(QtGui.QMainWindow):
         self.pl['d threshold value'] = self.ui.d_threshold_value.value()
         self.pl['d exposure time us'] = self.ui.d_exp_time_us.value()
         self.pl['d time'] = self.ui.d_time.value()
-        self.pl.to_csv(self.lif, sep=':')
+        self.pl.to_csv(self.lif, sep=':', header=False)
 
         
     def exec_folder_btn(self):
