@@ -19,6 +19,7 @@ import pyqtgraph as pg
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
 import numpy as np
+import pandas as pd
 
 from camera_class import StresingCameraVIS
 from ta_data_processing_class import taDataProcessing
@@ -30,13 +31,14 @@ import ctypes
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('visTA')
 
 class Editor(QtGui.QMainWindow):
-    def __init__(self,lif,pl=np.zeros((50,1)),preloaded=False):        
+    def __init__(self, lif, pl=np.zeros((50,1)), preloaded=False):        
         super(Editor, self).__init__()
         self.ui=Ui_TA_GUI()
         self.ui.setupUi(self)
         self.setWindowIcon(QtGui.QIcon('icon.png'))
         self.show()
         self.lif = lif  # stands for last instance filename
+        self.pl = pl
         
         #######################################################################
         #######################################################################
@@ -68,6 +70,7 @@ class Editor(QtGui.QMainWindow):
         self.ui.longstage_t0.valueChanged.connect(self.update_longstage_t0)
         self.ui.pinklaser_t0.valueChanged.connect(self.update_pinklaser_t0)
         self.ui.num_shots.valueChanged.connect(self.update_num_shots)
+        self.ui.exp_time_us.valueChanged.connect(self.update_exp_time_us)
         self.ui.num_sweeps.valueChanged.connect(self.update_num_sweeps)
         self.ui.delay_type_list.currentIndexChanged.connect(self.update_delay_type)
         self.ui.delay_type_list.addItem('Short Stage')
@@ -123,6 +126,7 @@ class Editor(QtGui.QMainWindow):
         self.ui.d_longstage_t0.valueChanged.connect(self.update_d_longstage_t0)
         self.ui.d_pinklaser_t0.valueChanged.connect(self.update_d_pinklaser_t0)
         self.ui.d_num_shots.valueChanged.connect(self.update_d_num_shots)
+        self.ui.d_exp_time_us.valueChanged.connect(self.update_d_exp_time_us)
         self.ui.d_delay_type_list.currentIndexChanged.connect(self.update_d_delay_type)
         self.ui.d_delay_type_list.addItem('Short Stage')
         self.ui.d_delay_type_list.addItem('Long Stage')
@@ -167,61 +171,61 @@ class Editor(QtGui.QMainWindow):
         
         self.set_reference_manipulation_maxmin_values()
         
-        if preloaded is False:
-            self.ui.cutoff_pixel_low.setValue(100)
-            self.ui.cutoff_pixel_high.setValue(400)
-            self.ui.calib_pixel_low.setValue(100)
-            self.ui.calib_pixel_high.setValue(400)
-            self.ui.calib_wave_low.setValue(500)
-            self.ui.calib_wave_high.setValue(800)
+        if preloaded is False:  # change these values to something sensible
+            self.ui.cutoff_pixel_low.setValue(30)
+            self.ui.cutoff_pixel_high.setValue(1000)
+            self.ui.calib_pixel_low.setValue(200)
+            self.ui.calib_pixel_high.setValue(800)
+            self.ui.calib_wave_low.setValue(400)
+            self.ui.calib_wave_high.setValue(700)
+            self.ui.shortstage_t0.setValue(0)
+            self.ui.longstage_t0.setValue(0)
+            self.ui.pinklaser_t0.setValue(0)
+            self.ui.delay_type_list.setCurrentIndex(1)
             self.ui.num_shots.setValue(200)
             self.ui.num_sweeps.setValue(500)
-            self.ui.kinetic_pixel.setValue(100)
-            self.ui.spectra_timestep.setValue(4)
-            self.ui.delay_type_list.setCurrentIndex(0)
-            self.ui.d_display_mode.setCurrentIndex(0)
-            self.ui.d_display_mode_spectra.setCurrentIndex(0)
-            self.ui.shortstage_t0.setValue(1800)
-            self.ui.longstage_t0.setValue(1800)
-            self.ui.pinklaser_t0.setValue(20000)
+            self.ui.exp_time_us.setValue(10)
             self.ui.kinetic_pixel.setValue(0)
             self.ui.spectra_timestep.setValue(0)
+            self.ui.d_display_mode.setCurrentIndex(0)
+            self.ui.d_display_mode_spectra.setCurrentIndex(0)
             self.ui.d_refman_horiz_offset.setValue(0)
             self.ui.d_refman_scale_center.setValue(250)
             self.ui.d_refman_scale_factor.setValue(1)
             self.ui.d_refman_vertical_offset.setValue(0)
             self.ui.d_refman_vertrical_stretch.setValue(1)
-            self.ui.d_use_linear_corr.setChecked(1)
-            self.ui.d_threshold_pixel.setValue(400)
+            self.ui.d_threshold_pixel.setValue(1100)
             self.ui.d_threshold_value.setValue(15000)
-            self.ui.d_time.setValue(1)
+            self.ui.d_exp_time_us.setValue(800)
+            self.ui.d_time.setValue(100)
+            self.ui.d_use_linear_corr.setChecked(1)
         else:
-            self.ui.cutoff_pixel_low.setValue(pl[0])
-            self.ui.cutoff_pixel_high.setValue(pl[1])
-            self.ui.calib_pixel_low.setValue(pl[2])
-            self.ui.calib_pixel_high.setValue(pl[3])
-            self.ui.calib_wave_low.setValue(pl[4])
-            self.ui.calib_wave_high.setValue(pl[5])
-            self.ui.num_shots.setValue(pl[6])
-            self.ui.num_sweeps.setValue(pl[7])
-            self.ui.kinetic_pixel.setValue(pl[8])
-            self.ui.spectra_timestep.setValue(int(pl[9]))
-            self.ui.delay_type_list.setCurrentIndex(pl[10])
-            self.ui.d_display_mode.setCurrentIndex(pl[11])
-            self.ui.d_display_mode_spectra.setCurrentIndex(pl[12])
-            self.ui.shortstage_t0.setValue(pl[25])
-            self.ui.longstage_t0.setValue(pl[13])
-            self.ui.pinklaser_t0.setValue(pl[14])
-            self.ui.kinetic_pixel.setValue(0)
-            self.ui.spectra_timestep.setValue(0)
-            self.ui.d_refman_horiz_offset.setValue(pl[17])
-            self.ui.d_refman_scale_center.setValue(pl[18])
-            self.ui.d_refman_scale_factor.setValue(pl[19])
-            self.ui.d_refman_vertical_offset.setValue(pl[20])
-            self.ui.d_refman_vertrical_stretch.setValue(pl[21])
-            self.ui.d_threshold_pixel.setValue(pl[22])
-            self.ui.d_threshold_value.setValue(pl[23])
-            self.ui.d_time.setValue(-100)
+            self.ui.cutoff_pixel_low.setValue(pl['cutoff pixel low'])
+            self.ui.cutoff_pixel_high.setValue(pl['cutoff pixel high'])
+            self.ui.calib_pixel_low.setValue(pl['calib pixel low'])
+            self.ui.calib_pixel_high.setValue(pl['calib pixel high'])
+            self.ui.calib_wave_low.setValue(pl['calib wavelength low'])
+            self.ui.calib_wave_high.setValue(pl['calib wavelength high'])
+            self.ui.shortstage_t0.setValue(pl['short stage time zero'])
+            self.ui.longstage_t0.setValue(pl['long stage time zero'])
+            self.ui.pinklaser_t0.setValue(pl['pink laser time zero'])
+            self.ui.delay_type_list.setCurrentIndex(pl['delay type'])
+            self.ui.num_shots.setValue(pl['num shots'])
+            self.ui.num_sweeps.setValue(pl['num sweeps'])
+            self.ui.exp_time_us.setValue(pl['exposure time us'])
+            self.ui.kinetic_pixel.setValue(pl['kinetic pixel'])
+            self.ui.spectra_timestep.setValue(pl['spectra timestep'])
+            self.ui.d_display_mode.setCurrentIndex(pl['d display mode'])
+            self.ui.d_display_mode_spectra.setCurrentIndex(pl['d display mode spectra'])
+            self.ui.d_refman_horiz_offset.setValue(pl['d refman horizontal offset'])
+            self.ui.d_refman_scale_center.setValue(pl['d refman scale center'])
+            self.ui.d_refman_scale_factor.setValue(pl['d refman scale factor'])
+            self.ui.d_refman_vertical_offset.setValue(pl['d refman vertical offset'])
+            self.ui.d_refman_vertrical_stretch.setValue(pl['d refman vertical stretch'])
+            self.ui.d_threshold_pixel.setValue(pl['d threshold pixel'])
+            self.ui.d_threshold_value.setValue(pl['d threshold value'])
+            self.ui.d_exp_time_us.setValue(pl['d exposure time us'])
+            self.ui.d_time.setValue(pl['d time'])
         
         # check whether this is actually needed
         # check if this does the right thing...
@@ -234,6 +238,7 @@ class Editor(QtGui.QMainWindow):
         self.update_kinetic_pixel()
         self.update_longstage_t0()
         self.update_num_shots()
+        self.update_exp_time_us()
         self.update_num_sweeps()
         self.update_pinklaser_t0()
         self.update_plot_log_t()
@@ -245,6 +250,7 @@ class Editor(QtGui.QMainWindow):
         self.update_use_calib()
         self.update_use_cutoff()
         self.update_d_time()
+        self.update_d_exp_time_us()
         
     def set_reference_manipulation_maxmin_values(self):
         self.ui.d_refman_horiz_offset.setMinimum(-1000)
@@ -264,33 +270,33 @@ class Editor(QtGui.QMainWindow):
     # Section 3: Methods which define signals connected in Section 1
         
     def save_gui_data(self):
-        output = np.array([self.ui.cutoff_pixel_low.value(),
-                        self.ui.cutoff_pixel_high.value(),
-                        self.ui.calib_pixel_low.value(),
-                        self.ui.calib_pixel_high.value(),
-                        self.ui.calib_wave_low.value(),
-                        self.ui.calib_wave_high.value(),
-                        self.ui.num_shots.value(),
-                        self.ui.num_sweeps.value(),
-                        self.ui.kinetic_pixel.value(),
-                        self.ui.spectra_timestep.value(),
-                        self.ui.delay_type_list.currentIndex(),
-                        self.ui.d_display_mode.currentIndex(),
-                        self.ui.d_display_mode_spectra.currentIndex(),
-                        self.ui.longstage_t0.value(),
-                        self.ui.pinklaser_t0.value(),
-                        self.ui.kinetic_pixel.value(),
-                        self.ui.spectra_timestep.value(),
-                        self.ui.d_refman_horiz_offset.value(),
-                        self.ui.d_refman_scale_center.value(),
-                        self.ui.d_refman_scale_factor.value(),
-                        self.ui.d_refman_vertical_offset.value(),
-                        self.ui.d_refman_vertrical_stretch.value(),
-                        self.ui.d_threshold_pixel.value(),
-                        self.ui.d_threshold_value.value(),
-                        self.ui.d_time.value(),
-                        self.ui.shortstage_t0.value()])
-        np.savetxt(self.lif,output,newline='\r\n')
+        self.pl['cutoff pixel low'] = self.ui.cutoff_pixel_low.value()
+        self.pl['cutoff pixel high'] = self.ui.cutoff_pixel_high.value()
+        self.pl['calib pixel low'] = self.ui.calib_pixel_low.value()
+        self.pl['calib pixel high'] = self.ui.calib_pixel_high.value()
+        self.pl['calib wavelength low'] = self.ui.calib_wave_low.value()
+        self.pl['calib wavelength high'] = self.ui.calib_wave_high.value()
+        self.pl['short stage time zero'] = self.ui.shortstage_t0.value()
+        self.pl['long stage time zero'] = self.ui.longstage_t0.value()
+        self.pl['pink laser time zero'] = self.ui.pinklaser_t0.value()
+        self.pl['delay type'] = self.ui.delay_type_list.currentIndex()
+        self.pl['num shots'] = self.ui.num_shots.value()
+        self.pl['num sweeps'] = self.ui.num_sweeps.value()
+        self.pl['exposure time us'] = self.ui.exp_time_us.value()
+        self.pl['kinetic pixel'] = self.ui.kinetic_pixel.value()
+        self.pl['spectra timestep'] = self.ui.spectra_timestep.value()
+        self.pl['d display mode'] = self.ui.d_display_mode.currentIndex()
+        self.pl['d display mode spectra'] = self.ui.d_display_mode_spectra.currentIndex()
+        self.pl['d refman horizontal offset'] = self.ui.d_refman_horiz_offset.value()
+        self.pl['d refman scale center'] = self.ui.d_refman_scale_center.value()
+        self.pl['d refman scale factor'] = self.ui.d_refman_scale_factor.value()
+        self.pl['d refman vertical offset'] = self.ui.d_refman_vertical_offset.value()
+        self.pl['d refman vertical stretch'] = self.ui.d_refman_vertrical_stretch.value()
+        self.pl['d threshold pixel'] = self.ui.d_threshold_pixel.value()
+        self.pl['d threshold value'] = self.ui.d_threshold_value.value()
+        self.pl['d exposure time us'] = self.ui.d_exp_time_us.value()
+        self.pl['d time'] = self.ui.d_time.value()
+        self.pl.to_csv(self.lif, sep=':', header=False)
 
         
     def exec_folder_btn(self):
@@ -470,6 +476,16 @@ class Editor(QtGui.QMainWindow):
         if self.idle is True:
             self.num_shots = self.ui.d_num_shots.value()
             self.ui.num_shots.setValue(self.num_shots)
+        return
+    
+    def update_exp_time_us(self):
+        '''executes when the exposure time is updated - DOES NOT keep consistent between tabs'''
+        self.exp_time_us = self.ui.exp_time_us.value()
+        return
+    
+    def update_d_exp_time_us(self):
+        '''executes when the diagnostics exposure time is updated - DOES NOT keep consistent between tabs'''
+        self.d_exp_time_us = self.ui.d_exp_time_us.value()
         return
             
     def update_num_sweeps(self):  # What is the number of sweeps? Is it the number of runs of the experiment?
@@ -1030,7 +1046,7 @@ class Editor(QtGui.QMainWindow):
         self.camera.data_ready.connect(self.post_acquire_bgd)
         
         if self.ui.test_run_btn.isChecked() is False:
-            self.camera.Initialize(number_of_scans=self.num_shots*10,exposure_time_us=10)##,use_ir_gain=self.ui.d_use_ir_gain.isChecked())
+            self.camera.Initialize(number_of_scans=self.num_shots*10,exposure_time_us=self.exp_time_us)##,use_ir_gain=self.ui.d_use_ir_gain.isChecked())
             self.message_block()
             self.append_history('Taking Background')
             self.acquire_bgd()
@@ -1044,7 +1060,7 @@ class Editor(QtGui.QMainWindow):
         
         self.camera.data_ready.disconnect(self.post_acquire_bgd)
         self.camera.data_ready.connect(self.post_acquire)
-        self.camera.Initialize(number_of_scans=self.num_shots,exposure_time_us=10)##,use_ir_gain=self.ui.d_use_ir_gain.isChecked())
+        self.camera.Initialize(number_of_scans=self.num_shots,exposure_time_us=self.exp_time_us)##,use_ir_gain=self.ui.d_use_ir_gain.isChecked())
         
         self.append_history('Starting Sweep '+str(self.current_sweep.sweep_index))
         self.ui.sweep_display.display(self.current_sweep.sweep_index+1)
@@ -1287,10 +1303,10 @@ class Editor(QtGui.QMainWindow):
         
 def main():
     app = QtGui.QApplication(sys.argv)
-    last_instance_filename = os.path.join(os.path.expanduser('~'), 'Documents', 'TASoftware', 'visTA_v1.0', 'last_instance_values.txt')
+    last_instance_filename = 'last_instance_values.txt'
     try:
-        last_instance_values = np.genfromtxt(last_instance_filename)
-        ex = Editor(last_instance_filename,pl=last_instance_values,preloaded=True)
+        last_instance_values = pd.read_csv(last_instance_filename, sep=':', header=None, index_col=0, squeeze=True)
+        ex = Editor(last_instance_filename, pl=last_instance_values, preloaded=True)
     except:
         ex = Editor(last_instance_filename)
 

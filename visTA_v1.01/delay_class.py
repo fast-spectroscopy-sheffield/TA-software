@@ -37,7 +37,7 @@ class PILongStageDelay:
     		return    
 		
     def move_to(self, time_point_ps):
-        new_pos_mm = self.convert_ps_to_mm(float(self.t0-time_point_ps))
+        new_pos_mm = self.convert_ps_to_mm(float(time_point_ps-self.t0))
         self.stage.MOV('1', new_pos_mm)
         pitools.waitontarget(self.stage, '1', timeout=300)
         return False
@@ -52,14 +52,14 @@ class PILongStageDelay:
     def check_times(self, times):
         all_on_stage = True
         for time in times:
-            pos = self.convert_ps_to_mm(float(self.t0-time))
+            pos = self.convert_ps_to_mm(float(time-self.t0))
             if (pos>self.stage.qTMX()['1']) or (pos<self.stage.qTMN()['1']):
                 all_on_stage = False
         return all_on_stage
         
     def check_time(self, time):
         on_stage = True
-        pos = self.convert_ps_to_mm(float(self.t0-time))
+        pos = self.convert_ps_to_mm(float(time-self.t0))
         if (pos>self.stage.qTMX()['1']) or (pos<self.stage.qTMN()['1']):
             on_stage = False
         return on_stage
@@ -94,7 +94,7 @@ class PIShortStageDelay:
         return
 		
     def move_to(self, time_point_ps):
-        new_pos_mm = self.convert_ps_to_mm(float(self.t0-time_point_ps))
+        new_pos_mm = self.convert_ps_to_mm(float(time_point_ps-self.t0))
         self.stage.MOV('A', new_pos_mm)
         self.controller_error = True
         while self.controller_error:
@@ -115,14 +115,14 @@ class PIShortStageDelay:
     def check_times(self, times):
         all_on_stage = True
         for time in times:
-            pos = self.convert_ps_to_mm(float(self.t0-time))
+            pos = self.convert_ps_to_mm(float(time-self.t0))
             if (pos>self.stage.qTMX()['A']) or (pos<self.stage.qTMN()['A']):
                 all_on_stage = False
         return all_on_stage
         
     def check_time(self, time):
         on_stage = True
-        pos = self.convert_ps_to_mm(float(self.t0-time))
+        pos = self.convert_ps_to_mm(float(time-self.t0))
         if (pos>self.stage.qTMX()['A']) or (pos<self.stage.qTMN()['A']):
             on_stage = False
         return on_stage
@@ -148,7 +148,7 @@ class InnolasPinkLaserDelay:
         
     def move_to(self, time_point_ns):
         tau_flip_request = False
-        new_time = (self.t0-time_point_ns)*1E-9
+        new_time = (self.t0-time_point_ns)*1E-9  # is this correct since we are delaying the pump here not the probe?
         if new_time < 0:
             tau_flip_request = True
             new_time = new_time + 0.001  # add 1ms (rep rate is 1kHz)
@@ -162,14 +162,14 @@ class InnolasPinkLaserDelay:
     def check_times(self,times):
         all_between_two_shots = True
         for time in times:
-            new_time = (self.t0-time)*1E-9
+            new_time = (self.t0-time)*1E-9  # is this correct since we are delaying the pump here not the probe?
             if (new_time<-0.001) or (new_time>0.001):
                 all_between_two_shots = False
         return all_between_two_shots
         
     def check_time(self,time):
         between_two_shots = True
-        new_time = (self.t0-time)*1E-9
+        new_time = (self.t0-time)*1E-9  # is this correct since we are delaying the pump here not the probe?
         if (new_time<-0.001) or (new_time>0.001):
             between_two_shots = False
         return between_two_shots
