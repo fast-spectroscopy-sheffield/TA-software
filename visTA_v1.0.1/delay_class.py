@@ -32,9 +32,9 @@ class PILongStageDelay:
         self.initialized = True
 
     def home(self):
-    		self.stage.GOH('1')
-    		pitools.waitontarget(self.stage, '1', timeout=300)
-    		return    
+    	self.stage.GOH('1')
+    	pitools.waitontarget(self.stage, '1', timeout=300)
+    	return    
 		
     def move_to(self, time_point_ps):
         new_pos_mm = self.convert_ps_to_mm(float(time_point_ps-self.t0))
@@ -145,6 +145,8 @@ class InnolasPinkLaserDelay:
         self.dg.write('LPOL 1,1\r')  # set level polarity positive
         self.dg.write('DLAY 3,2,1e-7\r')  # set output pulse width to 100 ns
         self.dg.write('DLAY 2,0,0\r')  # set output pulse delay to (arbitrary value of) 0
+        self.dg.write('ADVT 1\r')  # enable advanced triggering
+        self.dg.write('PRES 1,2\r')  # halve the frequency of AB channel output
         
     def move_to(self, time_point_ns):
         tau_flip_request = False

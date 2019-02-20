@@ -194,7 +194,7 @@ class Editor(QtGui.QMainWindow):
             self.ui.d_refman_scale_factor.setValue(1)
             self.ui.d_refman_vertical_offset.setValue(0)
             self.ui.d_refman_vertrical_stretch.setValue(1)
-            self.ui.d_threshold_pixel.setValue(1100)
+            self.ui.d_threshold_pixel.setValue(0)
             self.ui.d_threshold_value.setValue(15000)
             self.ui.d_exp_time_us.setValue(800)
             self.ui.d_time.setValue(100)

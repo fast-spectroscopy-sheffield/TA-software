@@ -20,7 +20,7 @@ d refman scale center:100
 d refman scale factor:1
 d refman vertical offset:0
 d refman vertical stretch:1
-d threshold pixel:1100
+d threshold pixel:0
 d threshold value:15000
 d exposure time us:800
 d time:200
