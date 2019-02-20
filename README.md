@@ -8,7 +8,7 @@ Original code can be found at https://gitlab.com/Fastlab/PyTA.
 For use with the double-line VIS cameras detecting wavelengths in the visible.
 
 #### Version Information
-Current version: 1.01  
+Current version: 1.0.1  
 David Bossanyi (19-02-2019)  
 <dgbossanyi1@sheffield.ac.uk>
 
