@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\Lab_Test\Documents\GitHub\TA-software\visTA_v1.01\ta_gui.ui'
+# Form implementation generated from reading ui file 'ta_gui.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -545,7 +545,8 @@ class Ui_TA_GUI(object):
         self.label_51.setObjectName("label_51")
         self.d_threshold_value = QtWidgets.QSpinBox(self.d_other_box)
         self.d_threshold_value.setGeometry(QtCore.QRect(180, 70, 71, 22))
-        self.d_threshold_value.setMaximum(100000)
+        self.d_threshold_value.setMinimum(-10000000)
+        self.d_threshold_value.setMaximum(10000000)
         self.d_threshold_value.setObjectName("d_threshold_value")
         self.label_52 = QtWidgets.QLabel(self.d_other_box)
         self.label_52.setGeometry(QtCore.QRect(260, 70, 81, 21))
@@ -663,7 +664,7 @@ class Ui_TA_GUI(object):
         TA_GUI.setStatusBar(self.statusBar)
 
         self.retranslateUi(TA_GUI)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(TA_GUI)
 
     def retranslateUi(self, TA_GUI):

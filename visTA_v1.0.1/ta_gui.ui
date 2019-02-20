@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="acquire_tab">
      <attribute name="title">
@@ -1996,8 +1996,11 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="minimum">
+        <number>-10000000</number>
+       </property>
        <property name="maximum">
-        <number>100000</number>
+        <number>10000000</number>
        </property>
       </widget>
       <widget class="QLabel" name="label_52">
