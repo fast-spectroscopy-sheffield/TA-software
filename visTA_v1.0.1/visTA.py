@@ -411,10 +411,10 @@ class Editor(QtGui.QMainWindow):
         for use,log,_min,_max,_steps in zip(uses,logs,mins,maxes,steps):
             if use.isChecked():
                 if log.isChecked():
-                    for value in np.logspace(np.log10(_min.value()),np.log10(_max.value()),num=_steps.value(),dtype=int):
+                    for value in np.logspace(np.log10(_min.value()),np.log10(_max.value()),num=_steps.value(),dtype=float):  # data type changed from int
                         new_times.append(value)
                 else:
-                    for value in np.linspace(_min.value(),_max.value(),num=_steps.value(),dtype=int):
+                    for value in np.linspace(_min.value(),_max.value(),num=_steps.value(),dtype=float):  # data type changed from int
                         new_times.append(value)
         try:
             new_filename = QtGui.QFileDialog.getSaveFileName(None,'Save File As:',self.timefile_folder)

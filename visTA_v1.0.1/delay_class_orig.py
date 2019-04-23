@@ -32,10 +32,10 @@ class PILongStageDelay:
         self.initialized = True
 
     def home(self):
-        self.stage.GOH('1')
-        pitools.waitontarget(self.stage, '1', timeout=300)
-        return    
-        
+    	self.stage.GOH('1')
+    	pitools.waitontarget(self.stage, '1', timeout=300)
+    	return    
+		
     def move_to(self, time_point_ps):
         new_pos_mm = self.convert_ps_to_mm(float(time_point_ps-self.t0))
         self.stage.MOV('1', new_pos_mm)
@@ -92,7 +92,7 @@ class PIShortStageDelay:
             except:
                 sleep(0.2)
         return
-        
+		
     def move_to(self, time_point_ps):
         new_pos_mm = self.convert_ps_to_mm(float(time_point_ps-self.t0))
         self.stage.MOV('A', new_pos_mm)
@@ -104,14 +104,14 @@ class PIShortStageDelay:
             except:
                 sleep(0.2)
         return False
-        
+		
     def convert_ps_to_mm(self,time_ps):
         pos_mm = 0.299792458*time_ps/2
         return pos_mm
 
     def close(self):
         self.gateway.close()
-        
+		
     def check_times(self, times):
         all_on_stage = True
         for time in times:
@@ -147,20 +147,13 @@ class InnolasPinkLaserDelay:
         self.dg.write('DLAY 2,0,0\r')  # set output pulse delay to (arbitrary value of) 0
         self.dg.write('ADVT 1\r')  # enable advanced triggering
         self.dg.write('PRES 1,2\r')  # halve the frequency of AB channel output
-        self.dg.write('LOFF 2,0.0\r')  # set the level offset of CD channel to 0, to use as 500 HZ for PCI
-        self.dg.write('LAMP 2,4.0\r')  # set CD level amplitude to +4V
-        self.dg.write('LPOL 2,1\r')  # set CD level polarity positive
-        self.dg.write('DLAY 5,4,5e-4\r')  # set CD output pulse width to 500 us
-        self.dg.write('DLAY 4,0,0\r')  # set CD output pulse delay to (arbitrary value of) 0
-        self.dg.write('PRES 2,2\r')  # halve the frequency of CD channel output
-
         
     def move_to(self, time_point_ns):
         tau_flip_request = False
         new_time = (self.t0-time_point_ns)*1E-9  # is this correct since we are delaying the pump here not the probe?
         if new_time < 0:
             tau_flip_request = True
-            new_time = new_time + 0.001  # add 1ms (rep rate is 1kHz) (AJM changed to 0ms 11-03-2019)
+            new_time = new_time + 0.001  # add 1ms (rep rate is 1kHz)
         self.dg.write('DLAY 2,0,{0:.5e}\r'.format(new_time))  # delay channel AB by new_time seconds from channel T0
         return tau_flip_request
     
