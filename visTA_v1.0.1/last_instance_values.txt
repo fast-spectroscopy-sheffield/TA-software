@@ -1,5 +1,7 @@
+use cutoff:1
 cutoff pixel low:400
 cutoff pixel high:870
+use calib:1
 calib pixel low:605
 calib pixel high:895
 calib wavelength low:600
@@ -13,6 +15,7 @@ num sweeps:20
 exposure time us:10
 kinetic pixel:605
 spectra timestep:10
+d use ref manip:1
 d display mode:0
 d display mode spectra:0
 d refman horizontal offset:-6
