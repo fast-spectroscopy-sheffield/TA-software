@@ -157,8 +157,8 @@ class Editor(QtGui.QMainWindow):
         # Section 2: Initializing values in the gui
         
         self.times = np.array([0,1,2,3,4,5])
-        self.num_pixels = 500
-        self.ui.filename.setText(os.path.join(os.path.expanduser('~'), 'Documents', 'TASoftware', 'testing', 'testdatafile'))
+        self.num_pixels = 1024  # ideally this shouldn't be hard-coded... edit when we set up IR
+        self.ui.filename.setText(os.path.join(os.path.expanduser('~'), 'Documents', 'Data', 'Testing', 'testdata'))
         self.idle = True
         self.ui.use_calib.toggle()
         self.ui.use_cutoff.toggle()
@@ -187,7 +187,7 @@ class Editor(QtGui.QMainWindow):
             self.ui.num_shots.setValue(200)
             self.ui.num_sweeps.setValue(500)
             self.ui.exp_time_us.setValue(10)
-            self.ui.kinetic_pixel.setValue(0)
+            self.ui.kinetic_pixel.setValue(600)
             self.ui.spectra_timestep.setValue(0)
             self.ui.d_display_mode.setCurrentIndex(0)
             self.ui.d_display_mode_spectra.setCurrentIndex(0)
@@ -276,10 +276,10 @@ class Editor(QtGui.QMainWindow):
     # Section 3: Methods which define signals connected in Section 1
         
     def save_gui_data(self):
-        self.pl['use cutoff'] = self.ui.use_cutoff.isChecked()
+        self.pl['use cutoff'] = 1 if self.ui.use_cutoff.isChecked() else 0
         self.pl['cutoff pixel low'] = self.ui.cutoff_pixel_low.value()
         self.pl['cutoff pixel high'] = self.ui.cutoff_pixel_high.value()
-        self.pl['use calib'] = self.ui.use_calib.isChecked()
+        self.pl['use calib'] = 1 if self.ui.use_calib.isChecked() else 0
         self.pl['calib pixel low'] = self.ui.calib_pixel_low.value()
         self.pl['calib pixel high'] = self.ui.calib_pixel_high.value()
         self.pl['calib wavelength low'] = self.ui.calib_wave_low.value()
@@ -295,7 +295,7 @@ class Editor(QtGui.QMainWindow):
         self.pl['spectra timestep'] = self.ui.spectra_timestep.value()
         self.pl['d display mode'] = self.ui.d_display_mode.currentIndex()
         self.pl['d display mode spectra'] = self.ui.d_display_mode_spectra.currentIndex()
-        self.pl['d use ref manip'] = self.ui.d_use_ref_manip.isChecked()
+        self.pl['d use ref manip'] = 1 if self.ui.d_use_ref_manip.isChecked() else 0
         self.pl['d refman horizontal offset'] = self.ui.d_refman_horiz_offset.value()
         self.pl['d refman scale center'] = self.ui.d_refman_scale_center.value()
         self.pl['d refman scale factor'] = self.ui.d_refman_scale_factor.value()
@@ -310,10 +310,9 @@ class Editor(QtGui.QMainWindow):
         
     def exec_folder_btn(self):
         '''execute on clicking folder button - store filename and display'''
-        fd = QtGui.QFileDialog()
-        fd.setFileMode(QtGui.QFileDialog.Directory)
-        self.filename = fd.getOpenFileName(None, 'Select Folder', os.path.join(os.expanduser('~'), 'Documents' ,'Data'))  # change the default folder
-        self.ui.filename.setText(self.filename[0])
+        self.filename = QtGui.QFileDialog.getExistingDirectory(None, 'Select Folder', os.path.join(os.path.expanduser('~'), 'Documents' ,'Data'))
+        self.filename = os.path.normpath(self.filename)
+        self.ui.filename.setText(self.filename)
         return
         
     def exec_file_changed(self):
@@ -773,7 +772,8 @@ class Editor(QtGui.QMainWindow):
         else:
             plot_times = self.plot_times
         try:
-            self.ui.kinetic_graph.plotItem.plot(plot_times,self.plot_dtt[np.isfinite(self.plot_times),self.kinetic_pixel],pen='r',clear=True)
+            kinetic_pixel_index = self.kinetic_pixel if not self.use_cutoff else self.kinetic_pixel-self.cutoff[0]
+            self.ui.kinetic_graph.plotItem.plot(plot_times, self.plot_dtt[np.isfinite(self.plot_times), kinetic_pixel_index], pen='r', clear=True)
         except:
             self.append_history('Error Plotting Kinetic Plot')
         return
