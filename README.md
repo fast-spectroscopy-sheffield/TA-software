@@ -17,5 +17,5 @@ Yet to be tested with the cameras.
 
 #### Version Information
 Current version: 1.0.0  
-David Bossanyi (25/04/2019)   
+David Bossanyi (25-04-2019)   
 <dgbossanyi1@sheffield.ac.uk>
