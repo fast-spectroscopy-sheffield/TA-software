@@ -1,8 +1,8 @@
 """
-Version 1.0.1
+Version 1.0.2
 
 David Bossanyi
-19-02-2019
+25-04-2019
 dgbossanyi1@sheffield.ac.uk
 
 Adapted with permission from code written by various members of the OE group at Cambridge.
@@ -103,7 +103,7 @@ class Editor(QtGui.QMainWindow):
         ### Diagnostics Tab ###
         
         # Reference Manipulation
-        self.ui.d_refman_vertrical_stretch.valueChanged.connect(self.update_refman)
+        self.ui.d_refman_vertical_stretch.valueChanged.connect(self.update_refman)
         self.ui.d_refman_vertical_offset.valueChanged.connect(self.update_refman)
         self.ui.d_refman_horiz_offset.valueChanged.connect(self.update_refman)
         self.ui.d_refman_scale_center.valueChanged.connect(self.update_refman)
@@ -157,8 +157,8 @@ class Editor(QtGui.QMainWindow):
         # Section 2: Initializing values in the gui
         
         self.times = np.array([0,1,2,3,4,5])
-        self.num_pixels = 500
-        self.ui.filename.setText(os.path.join(os.path.expanduser('~'), 'Documents', 'TASoftware', 'testing', 'testdatafile'))
+        self.num_pixels = 1024  # ideally this shouldn't be hard-coded... edit when we set up IR
+        self.ui.filename.setText(os.path.join(os.path.expanduser('~'), 'Documents', 'Data', 'Testing', 'testdata'))
         self.idle = True
         self.ui.use_calib.toggle()
         self.ui.use_cutoff.toggle()
@@ -172,8 +172,10 @@ class Editor(QtGui.QMainWindow):
         self.set_reference_manipulation_maxmin_values()
         
         if preloaded is False:  # change these values to something sensible
+            self.ui.use_cutoff.setChecked(1)
             self.ui.cutoff_pixel_low.setValue(30)
             self.ui.cutoff_pixel_high.setValue(1000)
+            self.ui.use_calib.setChecked(1)
             self.ui.calib_pixel_low.setValue(200)
             self.ui.calib_pixel_high.setValue(800)
             self.ui.calib_wave_low.setValue(400)
@@ -185,23 +187,26 @@ class Editor(QtGui.QMainWindow):
             self.ui.num_shots.setValue(200)
             self.ui.num_sweeps.setValue(500)
             self.ui.exp_time_us.setValue(10)
-            self.ui.kinetic_pixel.setValue(0)
+            self.ui.kinetic_pixel.setValue(600)
             self.ui.spectra_timestep.setValue(0)
             self.ui.d_display_mode.setCurrentIndex(0)
             self.ui.d_display_mode_spectra.setCurrentIndex(0)
+            self.ui.d_use_ref_manip.setChecked(1)
             self.ui.d_refman_horiz_offset.setValue(0)
             self.ui.d_refman_scale_center.setValue(250)
             self.ui.d_refman_scale_factor.setValue(1)
             self.ui.d_refman_vertical_offset.setValue(0)
-            self.ui.d_refman_vertrical_stretch.setValue(1)
+            self.ui.d_refman_vertical_stretch.setValue(1)
             self.ui.d_threshold_pixel.setValue(0)
             self.ui.d_threshold_value.setValue(15000)
             self.ui.d_exp_time_us.setValue(800)
             self.ui.d_time.setValue(100)
-            self.ui.d_use_linear_corr.setChecked(1)
+            self.ui.d_use_linear_corr.setChecked(0)
         else:
+            self.ui.use_cutoff.setChecked(pl['use cutoff'])
             self.ui.cutoff_pixel_low.setValue(pl['cutoff pixel low'])
             self.ui.cutoff_pixel_high.setValue(pl['cutoff pixel high'])
+            self.ui.use_calib.setChecked(pl['use calib'])
             self.ui.calib_pixel_low.setValue(pl['calib pixel low'])
             self.ui.calib_pixel_high.setValue(pl['calib pixel high'])
             self.ui.calib_wave_low.setValue(pl['calib wavelength low'])
@@ -217,11 +222,12 @@ class Editor(QtGui.QMainWindow):
             self.ui.spectra_timestep.setValue(pl['spectra timestep'])
             self.ui.d_display_mode.setCurrentIndex(pl['d display mode'])
             self.ui.d_display_mode_spectra.setCurrentIndex(pl['d display mode spectra'])
+            self.ui.d_use_ref_manip.setChecked(pl['d use ref manip'])
             self.ui.d_refman_horiz_offset.setValue(pl['d refman horizontal offset'])
             self.ui.d_refman_scale_center.setValue(pl['d refman scale center'])
             self.ui.d_refman_scale_factor.setValue(pl['d refman scale factor'])
             self.ui.d_refman_vertical_offset.setValue(pl['d refman vertical offset'])
-            self.ui.d_refman_vertrical_stretch.setValue(pl['d refman vertical stretch'])
+            self.ui.d_refman_vertical_stretch.setValue(pl['d refman vertical stretch'])
             self.ui.d_threshold_pixel.setValue(pl['d threshold pixel'])
             self.ui.d_threshold_value.setValue(pl['d threshold value'])
             self.ui.d_exp_time_us.setValue(pl['d exposure time us'])
@@ -255,14 +261,14 @@ class Editor(QtGui.QMainWindow):
     def set_reference_manipulation_maxmin_values(self):
         self.ui.d_refman_horiz_offset.setMinimum(-1000)
         self.ui.d_refman_horiz_offset.setMaximum(1000)
-        self.ui.d_refman_vertical_offset.setMinimum(-1000)
-        self.ui.d_refman_vertical_offset.setMaximum(1000)
+        self.ui.d_refman_vertical_offset.setMinimum(-10000)
+        self.ui.d_refman_vertical_offset.setMaximum(10000)
         self.ui.d_refman_scale_center.setMinimum(0)
         self.ui.d_refman_scale_center.setMaximum(100)
         self.ui.d_refman_scale_factor.setMinimum(0)
         self.ui.d_refman_scale_factor.setMaximum(100)
-        self.ui.d_refman_vertrical_stretch.setMinimum(0)
-        self.ui.d_refman_vertrical_stretch.setMaximum(100)
+        self.ui.d_refman_vertical_stretch.setMinimum(0)
+        self.ui.d_refman_vertical_stretch.setMaximum(100)
      
     ###########################################################################
     ###########################################################################
@@ -270,8 +276,10 @@ class Editor(QtGui.QMainWindow):
     # Section 3: Methods which define signals connected in Section 1
         
     def save_gui_data(self):
+        self.pl['use cutoff'] = 1 if self.ui.use_cutoff.isChecked() else 0
         self.pl['cutoff pixel low'] = self.ui.cutoff_pixel_low.value()
         self.pl['cutoff pixel high'] = self.ui.cutoff_pixel_high.value()
+        self.pl['use calib'] = 1 if self.ui.use_calib.isChecked() else 0
         self.pl['calib pixel low'] = self.ui.calib_pixel_low.value()
         self.pl['calib pixel high'] = self.ui.calib_pixel_high.value()
         self.pl['calib wavelength low'] = self.ui.calib_wave_low.value()
@@ -287,11 +295,12 @@ class Editor(QtGui.QMainWindow):
         self.pl['spectra timestep'] = self.ui.spectra_timestep.value()
         self.pl['d display mode'] = self.ui.d_display_mode.currentIndex()
         self.pl['d display mode spectra'] = self.ui.d_display_mode_spectra.currentIndex()
+        self.pl['d use ref manip'] = 1 if self.ui.d_use_ref_manip.isChecked() else 0
         self.pl['d refman horizontal offset'] = self.ui.d_refman_horiz_offset.value()
         self.pl['d refman scale center'] = self.ui.d_refman_scale_center.value()
         self.pl['d refman scale factor'] = self.ui.d_refman_scale_factor.value()
         self.pl['d refman vertical offset'] = self.ui.d_refman_vertical_offset.value()
-        self.pl['d refman vertical stretch'] = self.ui.d_refman_vertrical_stretch.value()
+        self.pl['d refman vertical stretch'] = self.ui.d_refman_vertical_stretch.value()
         self.pl['d threshold pixel'] = self.ui.d_threshold_pixel.value()
         self.pl['d threshold value'] = self.ui.d_threshold_value.value()
         self.pl['d exposure time us'] = self.ui.d_exp_time_us.value()
@@ -301,8 +310,9 @@ class Editor(QtGui.QMainWindow):
         
     def exec_folder_btn(self):
         '''execute on clicking folder button - store filename and display'''
-        self.filename = QtGui.QFileDialog.getOpenFileName(None, 'Select Folder', 'E:')  # could change the default folder
-        self.ui.filename.setText(self.filename[0])
+        self.filename = QtGui.QFileDialog.getExistingDirectory(None, 'Select Folder', os.path.join(os.path.expanduser('~'), 'Documents' ,'Data'))
+        self.filename = os.path.normpath(self.filename)
+        self.ui.filename.setText(self.filename)
         return
         
     def exec_file_changed(self):
@@ -411,10 +421,10 @@ class Editor(QtGui.QMainWindow):
         for use,log,_min,_max,_steps in zip(uses,logs,mins,maxes,steps):
             if use.isChecked():
                 if log.isChecked():
-                    for value in np.logspace(np.log10(_min.value()),np.log10(_max.value()),num=_steps.value(),dtype=float):  # data type changed from int
+                    for value in np.logspace(np.log10(_min.value()),np.log10(_max.value()),num=_steps.value(),dtype=np.float64):  # data type changed from int
                         new_times.append(value)
                 else:
-                    for value in np.linspace(_min.value(),_max.value(),num=_steps.value(),dtype=float):  # data type changed from int
+                    for value in np.linspace(_min.value(),_max.value(),num=_steps.value(),dtype=np.float64):  # data type changed from int
                         new_times.append(value)
         try:
             new_filename = QtGui.QFileDialog.getSaveFileName(None,'Save File As:',self.timefile_folder)
@@ -423,7 +433,7 @@ class Editor(QtGui.QMainWindow):
         new_filename = new_filename[0]
         if new_filename[-3:] != '.tf':
             new_filename = new_filename+'.tf'
-        np.savetxt(new_filename,new_times,fmt='%i',newline='\r\n')
+        np.savetxt(new_filename,new_times,fmt='%f',newline='\r\n')  # changed format string to write floats
         self.load_timefiles_to_list()
         return
         
@@ -604,7 +614,7 @@ class Editor(QtGui.QMainWindow):
         
     def update_refman(self):
         '''stores referance manipulation data'''
-        self.refman = [self.ui.d_refman_vertrical_stretch.value(),
+        self.refman = [self.ui.d_refman_vertical_stretch.value(),
                        self.ui.d_refman_vertical_offset.value(),
                        self.ui.d_refman_horiz_offset.value(),
                        self.ui.d_refman_scale_center.value(),
@@ -762,7 +772,8 @@ class Editor(QtGui.QMainWindow):
         else:
             plot_times = self.plot_times
         try:
-            self.ui.kinetic_graph.plotItem.plot(plot_times,self.plot_dtt[np.isfinite(self.plot_times),self.kinetic_pixel],pen='r',clear=True)
+            kinetic_pixel_index = self.kinetic_pixel if not self.use_cutoff else self.kinetic_pixel-self.cutoff[0]
+            self.ui.kinetic_graph.plotItem.plot(plot_times, self.plot_dtt[np.isfinite(self.plot_times), kinetic_pixel_index], pen='r', clear=True)
         except:
             self.append_history('Error Plotting Kinetic Plot')
         return

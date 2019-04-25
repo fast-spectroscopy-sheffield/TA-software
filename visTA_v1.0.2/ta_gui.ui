@@ -1367,7 +1367,7 @@
       <property name="title">
        <string>Reference Manipulation</string>
       </property>
-      <widget class="QDoubleSpinBox" name="d_refman_vertrical_stretch">
+      <widget class="QDoubleSpinBox" name="d_refman_vertical_stretch">
        <property name="geometry">
         <rect>
          <x>10</x>
