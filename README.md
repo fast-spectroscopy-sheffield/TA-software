@@ -11,3 +11,11 @@ For use with the double-line VIS cameras detecting wavelengths in the visible.
 Current version: 1.0.2  
 David Bossanyi (25-04-2019)  
 <dgbossanyi1@sheffield.ac.uk>
+
+### irTA
+Yet to be tested with the cameras.
+
+#### Version Information
+Current version: 1.0.0  
+David Bossanyi (25/04/2019)   
+<dgbossanyi1@sheffield.ac.uk>
