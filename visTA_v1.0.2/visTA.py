@@ -1,8 +1,8 @@
 """
-Version 1.0.1
+Version 1.0.2
 
 David Bossanyi
-19-02-2019
+25-04-2019
 dgbossanyi1@sheffield.ac.uk
 
 Adapted with permission from code written by various members of the OE group at Cambridge.
