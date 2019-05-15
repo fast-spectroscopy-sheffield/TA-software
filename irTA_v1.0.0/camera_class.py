@@ -8,7 +8,7 @@ class StresingCameraIR(QObject):
     def __init__(self):
         super(QObject, self).__init__()
         self.dll = ct.WinDLL(os.path.join(os.path.expanduser('~'), 'Documents', 'StresingCameras', '64bit', '64IR600CAM2', 'ESLSCDLL_64', 'x64', 'Release', '2cam', 'ESLSCDLL_64.dll'))
-        self.board_number = 1 #Use 1 for PCI board
+        self.board_number = 2 #Use 1 for PCI board
         self.zadr = 1 #Not needed, only if in addressed mode
         self.fft_lines = 0  # 0 for most (IR?) sensors, is number of lines for binning if FFT sensor. Set to zero by cambridge
         self.pixels = 600 #including dummy pixels
@@ -56,20 +56,20 @@ class StresingCameraIR(QObject):
                                          ct.c_int32]
     
     #Combined Methods to Call Camera Easily
-    def Initialize(self, number_of_scans=100, exposure_time_us=1):
+    def Initialize(self, number_of_scans=100, exposure_time_us=1, use_ir_gain=True):
         self.number_of_scans = number_of_scans
         self.exposure_time_us = int(exposure_time_us)
         self.CCDDrvInit()
         #self.RsTOREG()
         self.InitBoard()
-        self.WriteL(100,52)
-		self.RsTOREG()  # moved here to be consistent with labview
+        self.WriteLongS0(100,52)
+        self.RsTOREG()  # moved here to be consistent with labview
         self.SetISPDA(1)
         if use_ir_gain is True:
             self.Von()
         else:
             self.Voff()
-        self.FFRS()
+        self.RSFifo()
         self.Cal16bit()
         self.array = np.zeros((self.number_of_scans+10,self.pixels*2),dtype=np.dtype(np.int32))
         self.data = self.array[10:]
@@ -315,10 +315,10 @@ class StresingCameraIR(QObject):
         return us
     
     def Von(self):
-        self.dll.DLLVon(ct.c_uint32(self.board_number))
+        self.dll.DLLVOn(ct.c_uint32(self.board_number))
         
     def Voff(self):
-        self.dll.DLLVoff(ct.c_uint32(self.board_number))
+        self.dll.DLLVOff(ct.c_uint32(self.board_number))
         
     def WaitforTelapsed(self, t_us):
         success = self.dll.DLLWaitforTelapsed(ct.c_uint32(t_us))
