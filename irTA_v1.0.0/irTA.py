@@ -21,7 +21,7 @@ pg.setConfigOption('foreground', 'k')
 import numpy as np
 import pandas as pd
 
-from camera_class import StresingCameraVIS
+from camera_class import StresingCameraIR
 from ta_data_processing_class import taDataProcessing
 from sweep_processing_class import SweepProcessing
 
