@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>hdf5gui</class>
+ <widget class="QMainWindow" name="hdf5gui">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>822</width>
-    <height>459</height>
+    <height>484</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>HDF5 Converter</string>
+   <string>HDF5 Conversion Tool</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QGroupBox" name="input_file_gbox">
@@ -20,7 +20,7 @@
       <x>10</x>
       <y>10</y>
       <width>801</width>
-      <height>141</height>
+      <height>151</height>
      </rect>
     </property>
     <property name="title">
@@ -30,7 +30,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>20</y>
+       <y>30</y>
        <width>701</width>
        <height>111</height>
       </rect>
@@ -52,7 +52,7 @@
      <property name="geometry">
       <rect>
        <x>720</x>
-       <y>20</y>
+       <y>30</y>
        <width>75</width>
        <height>21</height>
       </rect>
@@ -65,7 +65,7 @@
      <property name="geometry">
       <rect>
        <x>720</x>
-       <y>50</y>
+       <y>60</y>
        <width>75</width>
        <height>21</height>
       </rect>
@@ -78,7 +78,7 @@
      <property name="geometry">
       <rect>
        <x>720</x>
-       <y>80</y>
+       <y>90</y>
        <width>75</width>
        <height>21</height>
       </rect>
@@ -91,7 +91,7 @@
      <property name="geometry">
       <rect>
        <x>720</x>
-       <y>110</y>
+       <y>120</y>
        <width>75</width>
        <height>21</height>
       </rect>
@@ -108,9 +108,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>160</y>
+      <y>170</y>
       <width>801</width>
-      <height>51</height>
+      <height>61</height>
      </rect>
     </property>
     <property name="title">
@@ -120,7 +120,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>20</y>
+       <y>30</y>
        <width>701</width>
        <height>20</height>
       </rect>
@@ -130,7 +130,7 @@
      <property name="geometry">
       <rect>
        <x>720</x>
-       <y>20</y>
+       <y>30</y>
        <width>75</width>
        <height>23</height>
       </rect>
@@ -147,9 +147,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>220</y>
+      <y>240</y>
       <width>291</width>
-      <height>211</height>
+      <height>221</height>
      </rect>
     </property>
     <property name="title">
@@ -159,7 +159,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>30</y>
+       <y>40</y>
        <width>171</width>
        <height>21</height>
       </rect>
@@ -175,7 +175,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>60</y>
+       <y>70</y>
        <width>70</width>
        <height>17</height>
       </rect>
@@ -191,7 +191,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>90</y>
+       <y>100</y>
        <width>271</width>
        <height>17</height>
       </rect>
@@ -199,12 +199,15 @@
      <property name="text">
       <string>probe, reference and error spectra for each sweep</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QCheckBox" name="sweeps_check">
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>120</y>
+       <y>130</y>
        <width>151</width>
        <height>17</height>
       </rect>
@@ -212,12 +215,15 @@
      <property name="text">
       <string>dT/T data for each sweep</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QPushButton" name="convert_button">
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>150</y>
+       <y>160</y>
        <width>161</width>
        <height>41</height>
       </rect>
@@ -234,9 +240,9 @@
     <property name="geometry">
      <rect>
       <x>310</x>
-      <y>220</y>
+      <y>240</y>
       <width>501</width>
-      <height>211</height>
+      <height>221</height>
      </rect>
     </property>
     <property name="title">
@@ -246,7 +252,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>20</y>
+       <y>30</y>
        <width>481</width>
        <height>181</height>
       </rect>

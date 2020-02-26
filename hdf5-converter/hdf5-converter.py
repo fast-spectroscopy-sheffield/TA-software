@@ -1,42 +1,40 @@
 import numpy as np
 import sys
-from PyQt5 import QtGui ,QtWidgets, uic
+from PyQt5 import QtGui, QtWidgets
+from gui import Ui_hdf5gui as hdf5gui
 import h5py
-import ctypes
 import os
 
-ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('hdf5App')
+# hack to get app to display icon properly (Windows OS only?)
+import ctypes
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('pyTA')
  
-qtCreatorFile = 'hdf5gui.ui'
- 
-Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)     
- 
-class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
+class Application(QtWidgets.QMainWindow):
     def __init__(self):
-        QtWidgets.QMainWindow.__init__(self)
-        Ui_MainWindow.__init__(self)
-        self.setupUi(self)
-        self.setWindowIcon(QtGui.QIcon('icon_hdf5.png'))
+        super(Application, self).__init__()
+        self.ui = hdf5gui()
+        self.ui.setupUi(self)
+        self.setWindowIcon(QtGui.QIcon('icon.png'))
         self.files_dict = {}
-        self.file_up.clicked.connect(self.move_file_up)
-        self.file_down.clicked.connect(self.move_file_down)
-        self.delete_button.clicked.connect(self.delete_file)
-        self.load_button.clicked.connect(self.load_data)
-        self.folder_browser.clicked.connect(self.get_save_folder)
-        self.convert_button.clicked.connect(self.convert)
+        self.ui.file_up.clicked.connect(self.move_file_up)
+        self.ui.file_down.clicked.connect(self.move_file_down)
+        self.ui.delete_button.clicked.connect(self.delete_file)
+        self.ui.load_button.clicked.connect(self.load_data)
+        self.ui.folder_browser.clicked.connect(self.get_save_folder)
+        self.ui.convert_button.clicked.connect(self.convert)
        
     def display_status(self, message, colour, msecs=0):
-        self.status_bar.clearMessage()
-        self.status_bar.setStyleSheet('QStatusBar{color:'+colour+';}')
-        self.status_bar.showMessage(message, msecs=msecs)
+        self.ui.status_bar.clearMessage()
+        self.ui.status_bar.setStyleSheet('QStatusBar{color:'+colour+';}')
+        self.ui.status_bar.showMessage(message, msecs=msecs)
         
     def write_console(self, message):
-        self.console.appendPlainText(message)
+        self.ui.console.appendPlainText(message)
     
     def load_data(self):
         ok = True
-        for index in range(self.file_list.count()):
-            filepath = self.file_list.item(index).text()
+        for index in range(self.ui.file_list.count()):
+            filepath = self.ui.file_list.item(index).text()
             try:
                 f = h5py.File(filepath, 'r')
                 self.files_dict[filepath] = f
@@ -54,11 +52,11 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         fpath = os.path.dirname(os.path.normpath(list(self.files_dict.keys())[0]))
         directory = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose folder to save data', os.path.dirname(fpath))
         self.directory = os.path.normpath(directory)
-        self.save_folder.setText(directory)
+        self.ui.save_folder.setText(directory)
             
     def delete_file(self):
-        row = self.file_list.currentRow()
-        item = self.file_list.takeItem(row)
+        row = self.ui.file_list.currentRow()
+        item = self.ui.file_list.takeItem(row)
         try:
             filepath = item.text()
             del self.files_dict[filepath]
@@ -67,16 +65,16 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         del(item)
         
     def move_file_up(self):
-        currentRow = self.file_list.currentRow()
-        currentItem = self.file_list.takeItem(currentRow)
-        self.file_list.insertItem(currentRow - 1, currentItem)
-        self.file_list.setCurrentItem(currentItem)
+        currentRow = self.ui.file_list.currentRow()
+        currentItem = self.ui.file_list.takeItem(currentRow)
+        self.ui.file_list.insertItem(currentRow - 1, currentItem)
+        self.ui.file_list.setCurrentItem(currentItem)
     
     def move_file_down(self):
-        currentRow = self.file_list.currentRow()
-        currentItem = self.file_list.takeItem(currentRow)
-        self.file_list.insertItem(currentRow + 1, currentItem)
-        self.file_list.setCurrentItem(currentItem)
+        currentRow = self.ui.file_list.currentRow()
+        currentItem = self.ui.file_list.takeItem(currentRow)
+        self.ui.file_list.insertItem(currentRow + 1, currentItem)
+        self.ui.file_list.setCurrentItem(currentItem)
         
     def convert(self):
         for key in self.files_dict.keys():
@@ -103,17 +101,20 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         filebasename = fname[0:-5]
         savedir = self.mkdir(self.directory, filebasename)
         f = self.files_dict[key]
-        if self.average_check.isChecked():
+        if self.ui.average_check.isChecked():
             array = np.array(f['Average']).T
             fpath = os.path.join(savedir, 'average_dTT.Dtc')
             self.write_console('saving averaged dT/T data to {0}'.format(str(fpath)))
             np.savetxt(fpath, array, delimiter=',')
-        if self.metadata_check.isChecked():
-            array = np.array(f['Metadata'])  # might want the transpose ???
-            fpath = os.path.join(savedir, 'metadata.csv')
+        if self.ui.metadata_check.isChecked():
+            array = np.array(f['Metadata'])
+            g = f.get('Metadata')
+            fpath = os.path.join(savedir, 'metadata.txt')
+            with open(fpath, 'w') as fmd:
+                for key in g.attrs:
+                    fmd.write(str(key)+': '+str(g.attrs[key], 'utf-8')+'\n')  
             self.write_console('saving metadata to {0}'.format(str(fpath)))
-            np.savetxt(fpath, array, delimiter=',')
-        if self.spectra_check.isChecked():
+        if self.ui.spectra_check.isChecked():
             newsavedir = self.mkdir(savedir, 'sweeps')
             wavelength = np.array(f['Average'])[0,1:]
             group = f['Spectra']
@@ -125,7 +126,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 fpath = os.path.join(folder, name)
                 self.write_console('saving spectrum to {0}'.format(fpath))
                 np.savetxt(fpath, array, delimiter=',')
-        if self.sweeps_check.isChecked():
+        if self.ui.sweeps_check.isChecked():
             newsavedir = self.mkdir(savedir, 'sweeps')
             group = f['Sweeps']
             for sweep in group.keys():
@@ -136,13 +137,11 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 np.savetxt(fpath, array, delimiter=',')
         f.close()
         self.write_console('finished file <{0}>'.format(fname))
-        
-        
-        
-        
+
  
 if __name__ == "__main__":
+    QtWidgets.QApplication.setStyle('Fusion')
     app = QtWidgets.QApplication(sys.argv)
-    window = MyApp()
+    window = Application()
     window.show()
     sys.exit(app.exec_())
