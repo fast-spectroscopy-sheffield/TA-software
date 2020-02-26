@@ -4,37 +4,75 @@ import numpy as np
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 
-class CameraVIS(QObject):
-    def __init__(self):
-        super(QObject, self).__init__()
-        self.dll = ct.WinDLL(os.path.join(os.path.expanduser('~'), 'Documents', 'StresingCameras', '64bit', '64FFT1200CAM2', 'ESLSCDLL_64', 'x64', 'Release', '2cam', 'ESLSCDLL_64.dll'))
-        self.board_number = 1 #Use 1 for PCI board
-        self.zadr = 1 #Not needed, only if in addressed mode
-        self.fft_lines = 64  # 0 for most (IR?) sensors, is number of lines for binning if FFT sensor. Set to zero by cambridge
-        self.vfreq = 7  # vertical frequency for FFT sensor, given as 7 in examples from Stresing
-        self.pixels = 1200 #including dummy pixels
-        self.num_pixels = 1024
-        self.first_pixel = 16
-        self.fkt = 1 #1 for standard read, others are possible, could try 0 but unlikely
-        self.sym = 0 #for FIFO, depends on sensor
-        self.burst = 1 #for FIFO, depends on sensor
-        self.waits = 3 #depends on sensor, sets the pixel read frequency
-        self.flag816 = 1 #1 if AD resolution 12 is 16bit, =2 if 8bit
-        self.pportadr = 378 #address if parallel port is used
-        self.pclk = 2 #pixelclock, not used here
-        self.xckdelay = 3 #Cambridge had this as 2200, 99% sure that's wrong #depends on sensor, sets a delay after xck goes high, -7 for sony sensors
-        self.freq = 0 #read frequency in Haz, should be 0 if exposure time is given
-        self.threadp = 15 #priority of thread, 31 is highest
-        self.clear_cnt = 8 #Number of reads to clear the sensor, depends on sensor
-        self.release_ms = -1 #Less than zero don't release
-        self.exttrig = 1 #1 is use external trigger
-        self.block_trigger = 0 #true (not 0) if one external trigger starts block of nos scans which run with internal timer
-        self.adrdelay = 3 #not sure...  
-        self.dat_10ns = 100 #delay after trigger
-        self.setArgTypes() # Required on 64-bit to ensure that pointers to the data array have the correct type
+class Acquisition(QObject):
     
-    # Required on 64-bit to ensure that pointers to the data array have the correct type
-    def setArgTypes(self):
+    def __init__(self, camera, number_of_scans=100, exposure_time_us=10):
+        super(QObject, self).__init__()
+        self.camera = camera
+        self.camera.number_of_scans = number_of_scans
+        self.camera.exposure_time_us = exposure_time_us
+        self.camera.array = np.zeros((self.camera.number_of_scans+10, self.camera.pixels*2), dtype=np.dtype(np.int32))
+        self.camera.data = self.camera.array[10:]
+        
+    start_acquire = pyqtSignal()
+    data_ready = pyqtSignal(np.ndarray, np.ndarray, int, int)
+    @pyqtSlot()
+    def acquire(self):
+        self.camera._acquire()
+        self.data_ready.emit(self.camera.probe, self.camera.reference, self.camera.first_pixel, self.camera.num_pixels)
+        self.camera.overflow = self.camera.FFOvl()
+        return
+
+
+class StresingCamera(QObject):
+    
+    def __init__(self, cameratype, use_ir_gain=False):
+        super(QObject, self).__init__()
+        self.cameratype = cameratype
+        self.use_ir_gain = use_ir_gain
+        if self.cameratype == 'VIS':
+            self.dll = self.dll = ct.WinDLL(os.path.join(os.path.expanduser('~'), 'Documents', 'StresingCameras', '64bit', '64FFT1200CAM2', 'ESLSCDLL_64', 'x64', 'Release', '2cam', 'ESLSCDLL_64.dll'))
+            self.board_number = 1  # PCI board index: 1 is VIS, 2 is NIR
+            self.fft_lines = 64  # number of lines for binning if FFT sensor, 0 for NIR, 64 for VIS
+            self.vfreq = 7  # vertical frequency for FFT sensor, given as 7 in examples from Stresing
+            self.pixels = 1200  # number of pixels, including dummy pixels
+            self.num_pixels = 1024  # actual number of active pixels
+            self.first_pixel = 16 # first non-dummy pixel
+            self.threadp = 15  # priority of thread, 31 is highest
+            self.dat_10ns = 100  # delay after trigger
+        elif self.cameratype == 'NIR':
+            self.dll = ct.WinDLL(os.path.join(os.path.expanduser('~'), 'Documents', 'StresingCameras', '64bit', '64IR600CAM2', 'ESLSCDLL_64', 'x64', 'Release', '2cam', 'ESLSCDLL_64.dll'))
+            self.board_number = 2 # PCI board index: 1 is VIS, 2 is NIR
+            self.fft_lines = 0  # number of lines for binning if FFT sensor, 0 for NIR, 64 for VIS
+            self.pixels = 600  # number of pixels, including dummy pixels
+            self.num_pixels = 512  # actual number of active pixels
+            self.first_pixel = 16  # first non-dummy pixel
+            self.threadp = 10  # priority of thread, 31 is highest
+        else:
+            raise ValueError('cameratype must be either \'VIS\' or \'NIR\'')
+        self.zadr = 1  # not needed, only if in addressed mode
+        self.fkt = 1  # 1 for standard read, others are possible, could try 0 but unlikely
+        self.sym = 0  # for FIFO, depends on sensor
+        self.burst = 1  # for FIFO, depends on sensor
+        self.waits = 3  # depends on sensor, sets the pixel read frequency
+        self.flag816 = 1  # 1 if AD resolution 12 is 16bit, 2 if 8bit
+        self.pportadr = 378  # address if parallel port is used
+        self.pclk = 2  # pixelclock, not used here
+        self.xckdelay = 3  # sets the delay after xck goes high
+        self.freq = 0  # read frequency in Hz, should be 0 if exposure time is given
+        self.clear_cnt = 8  # number of reads to clear the sensor, depends on sensor
+        self.release_ms = -1  # less than zero: don't release
+        self.exttrig = 1  # 1 is use external trigger
+        self.block_trigger = 0  # true (not 0) if one external trigger starts block of nos scans which run with internal timer
+        self.adrdelay = 3  # not sure what this is...
+        self.exposure_time_us = 10  # set an arbitrary default - overridden by Acquisition instance
+        self.number_of_scans = 100  # set an arbitrary default - overridden by Acquisition instance
+        self._set_argtypes()
+    
+    def _set_argtypes(self):
+        """
+        required on 64-bit to ensure that pointers to the data array have the correct type
+        """
         self.dll.DLLReadFFLoop.argtypes = [ct.c_uint32,
                                            np.ctypeslib.ndpointer(dtype=np.int32, ndim=2, flags=['C', 'W']),
                                            ct.c_uint32,
@@ -56,38 +94,36 @@ class CameraVIS(QObject):
         self.dll.DLLReadFifo.argtypes = [ct.c_uint32,
                                          np.ctypeslib.ndpointer(dtype=np.int32, ndim=2, flags=['C', 'W']),
                                          ct.c_int32]
-    
-    #Combined Methods to Call Camera Easily
-    def Initialize(self, number_of_scans=100, exposure_time_us=10):
-        self.number_of_scans = number_of_scans
-        self.exposure_time_us = int(exposure_time_us)
-        self.CCDDrvInit()
-        self.Wait(1000000)
-        #self.RsTOREG()  # may not need this? Commented out by Cambridge
-        #self.Wait(1000000)
-        self.InitBoard()
-        self.Wait(1000000)
-        self.WriteLongS0(100,52)        
-        self.Wait(1000000)
-        self.RsTOREG()  # moved line to here to be consistent with labview
-        self.Wait(1000000)
-        #self.SetISPDA(0) # may not need to explicitly write this
-        #self.Wait(1000000)
-        self.SetISFFT(1) # needed for FFT sensors
-        self.Wait(1000000)
-        self.SetupVCLK()  # added. Needed for FFT sensors? although not in Cambridge apparently
-        self.Wait(1000000)
-        self.Cal16bit()
-        self.Wait(1000000)
-        self.RSFifo()
-        self.Wait(1000000)
-        #self.WriteLongS0(2147483648+self.dat_10ns,32)
-        self.array = np.zeros((self.number_of_scans+10, self.pixels*2), dtype=np.dtype(np.int32))
-        self.data = self.array[10:]
-        self.Wait(1000000)
-        return 
         
-    def Wait(self, time_us):
+    def initialise(self):
+        self.CCDDrvInit()
+        self._wait(1000000)
+        self.InitBoard()
+        self._wait(1000000)
+        self.WriteLongS0(100,52)        
+        self._wait(1000000)
+        self.RsTOREG()
+        self._wait(1000000)
+        if self.cameratype == 'VIS':
+            self.SetISFFT(1)
+            self._wait(1000000)
+            self.SetupVCLK()
+        elif self.cameratype == 'NIR':
+            self.SetISPDA(1)
+            self._wait(1000000)
+            if self.use_ir_gain:
+                self.Von()
+            else:
+                self.Voff()
+        else:
+            raise ValueError('cameratype must be either \'VIS\' or \'NIR\'')
+        self._wait(1000000)
+        self.Cal16bit()
+        self._wait(1000000)
+        self.RSFifo()
+        self._wait(1000000)
+            
+    def _wait(self, time_us):
         self.InitSysTimer()
         tick_start = self.TicksTimestamp()
         time_start = self.Tickstous(tick_start)
@@ -98,18 +134,12 @@ class CameraVIS(QObject):
             time_end = self.Tickstous(tick_end)
         return
     
-    start_acquire = pyqtSignal()
-    data_ready = pyqtSignal(np.ndarray, np.ndarray, int, int)
-    @pyqtSlot()
-    def Acquire(self):
+    def _acquire(self):
         self.ReadFFLoop(self.number_of_scans, self.exposure_time_us)
-        self.Construct_Data_Vec()
-        self.data_ready.emit(self.probe, self.reference, self.first_pixel, self.num_pixels)
-        self.overflow = self.FFOvl()
+        self._construct_data_vectors()
         return
         
-    def Construct_Data_Vec(self):
-        # dtype of self.data is uint32
+    def _construct_data_vectors(self):
         hiloArray = self.data.view(np.uint16)[:, 0:self.pixels*2]  # temp = shots x (2*pixels)
         hiloArray = hiloArray.reshape(hiloArray.shape[0], 2, self.pixels)
         self.probe = hiloArray[:, 0, :]  # pointers onto self.data
@@ -117,13 +147,13 @@ class CameraVIS(QObject):
     
     _exit = pyqtSignal()
     @pyqtSlot()
-    def Exit(self):
+    def close(self):
         self.CCDDrvExit()
         
     ###########################################################################
     ###########################################################################
     ###########################################################################
-    #Library methods from DLL (Do not Edit)
+    # Library methods from DLL (DO NOT EDIT)
         
     def AboutDrv(self):
         self.dll.DLLAboutDrv(ct.c_uint32(self.board_number))
@@ -179,11 +209,7 @@ class CameraVIS(QObject):
     def FlagXCKI(self):
         active = self.dll.DLLFlagXCKI(ct.c_uint32(self.board_number))
         return bool(active)
-    
-    # changed seond argument from self.array.ctypes.data to self.array
-    # also included an argument type definition for DLLReadFFLoop
-    # see setArgTypes
-    # changed fkt argument to accept signed 32-bit integer (typo from Cambridge?)    
+       
     def GetCCD(self):
         self.dll.DLLGETCCD(ct.c_uint32(self.board_number),
                            self.array,
@@ -225,10 +251,6 @@ class CameraVIS(QObject):
         self.dll.DLLOutTrigPulse(ct.c_uint32(self.board_number),
                                  ct.c_uint32(pulse_width))
     
-    # changed seond argument from self.array.ctypes.data to self.array
-    # also included an argument type definition for DLLReadFFLoop
-    # see setArgTypes
-    # changed fkt argument to accept signed 32-bit integer (typo from Cambridge?)
     def ReadFifo(self):
         self.dll.DLLReadFifo(ct.c_uint32(self.board_number),
                              self.array,
@@ -239,9 +261,6 @@ class CameraVIS(QObject):
         counter = self.dll.DLLReadFFCounter(ct.c_uint32(self.board_number))
         return counter        
     
-    # changed seond argument from self.array.ctypes.data to self.array
-    # also included an argument type definition for DLLReadFFLoop
-    # see setArgTypes
     def ReadFFLoop(self, number_of_scans, exposure_time_us):
         self.dll.DLLReadFFLoop(ct.c_uint32(self.board_number),
                                self.array,
