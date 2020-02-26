@@ -4,7 +4,7 @@ import numpy as np
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 
-class StresingCameraVIS(QObject):
+class CameraVIS(QObject):
     def __init__(self):
         super(QObject, self).__init__()
         self.dll = ct.WinDLL(os.path.join(os.path.expanduser('~'), 'Documents', 'StresingCameras', '64bit', '64FFT1200CAM2', 'ESLSCDLL_64', 'x64', 'Release', '2cam', 'ESLSCDLL_64.dll'))

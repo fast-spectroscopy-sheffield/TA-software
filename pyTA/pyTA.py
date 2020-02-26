@@ -1,194 +1,115 @@
 """
-Version 1.0.2
-
-David Bossanyi
-25-04-2019
-dgbossanyi1@sheffield.ac.uk
-
-Adapted with permission from code written by various members of the OE group at Cambridge.
-Original code can be found at https://gitlab.com/Fastlab/PyTA
+Versions, contact info etc
 """
-
+# general
 import sys
 import os
-import subprocess
-
 from PyQt5 import QtGui, QtCore
-from ta_gui_class import Ui_TA_GUI
+
+# gui
+from gui import Ui_pyTAgui as pyTAgui
+
+# graphics
 import pyqtgraph as pg
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
+
+# data processing
 import numpy as np
 import pandas as pd
 
-from camera_class import StresingCameraVIS
-from ta_data_processing_class import taDataProcessing
-from sweep_processing_class import SweepProcessing
+# hardware
+#from cameras import StresingCameraVIS
+from dtt import taDataProcessing
+from sweeps import SweepProcessing
 
-from delay_class import PILongStageDelay, PIShortStageDelay, InnolasPinkLaserDelay
+#from delays import PILongStageDelay, PIShortStageDelay, InnolasPinkLaserDelay
 
-import ctypes
-ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('visTA')
+# hack to get app to display icon properly (Windows OS only?)
+#import ctypes
+#ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('pyTA')
 
-class Editor(QtGui.QMainWindow):
-    def __init__(self, lif, pl=np.zeros((50,1)), preloaded=False):        
-        super(Editor, self).__init__()
-        self.ui=Ui_TA_GUI()
+
+class Application(QtGui.QMainWindow):
+    def __init__(self, last_instance_filename, last_instance_values=None, preloaded=False):        
+        super(Application, self).__init__()
+        self.ui = pyTAgui()
         self.ui.setupUi(self)
         self.setWindowIcon(QtGui.QIcon('icon.png'))
+        self.ui.tabs.setCurrentIndex(0)
+        #self.ui.diagnostics_tab.setEnabled(False)
+        #self.ui.acquisition_tab.setEnabled(False)
         self.show()
-        self.lif = lif  # stands for last instance filename
-        self.pl = pl
+        self.last_instance_filename = last_instance_filename
+        self.last_instance_values = last_instance_values
+        self.preloaded = preloaded
+        self.camera_connected = False
+        self.delaystage_connected = False
+        self.datafolder = os.path.join(os.path.expanduser('~'), 'Documents', 'Data')
+        self.initialize_gui_values()
+        self.setup_gui_connections()
+        self.metadata = {}
+        self.idle = True
+        self.safe_to_exit = True
+        self.write_app_status('application launched', colour='blue')
         
-        #######################################################################
-        #######################################################################
-        #######################################################################
-        # Section 1: Creates Connections between GUI objects in ta_gui_class.py
-        # and the methods found in this class (Editor)        
+    def closeEvent(self, event):
+        if self.safe_to_exit:
+            self.save_gui_values()
+            event.accept()
+        else:
+            event.ignore()
+            self.message_unsafe_exit()
+            
+    def write_app_status(self, message, colour, timeout=0):
+        self.ui.statusBar.clearMessage()
+        self.ui.statusBar.setStyleSheet('QStatusBar{color:'+colour+';}')
+        self.ui.statusBar.showMessage(message, msecs=timeout)
+        return
         
-        ### Aquisition Tab ###
-        
-        # File
-        self.ui.folder_btn.clicked.connect(self.exec_folder_btn)  # what is this file that gets loaded ???
-        self.ui.filename.textChanged.connect(self.exec_file_changed)
-        self.ui.metadata_pump_wave.textChanged.connect(self.metadata_changed)
-        self.ui.metadata_pump_power.textChanged.connect(self.metadata_changed)
-        self.ui.metadata_pump_size.textChanged.connect(self.metadata_changed)
-        self.ui.metadata_probe_wave.textChanged.connect(self.metadata_changed)
-        self.ui.metadata_probe_power.textChanged.connect(self.metadata_changed)
-        self.ui.metadata_probe_size.textChanged.connect(self.metadata_changed)        
-        
-        # Timefile
-        self.ui.timefile_folder_btn.clicked.connect(self.exec_timefile_folder_btn)
-        self.ui.timefile_list.activated.connect(self.update_timefile)
-        self.ui.timefile_edit_btn.clicked.connect(self.exec_timefile_edit_btn)
-        self.ui.timefile_new_blank_btn.clicked.connect(self.exec_timefile_new_blank_btn)
-        self.ui.timefile_new_params_btn.clicked.connect(self.exec_timefile_new_params_btn)
-        
-        # Aquire Options
-        self.ui.shortstage_t0.valueChanged.connect(self.update_shortstage_t0)
-        self.ui.longstage_t0.valueChanged.connect(self.update_longstage_t0)
-        self.ui.pinklaser_t0.valueChanged.connect(self.update_pinklaser_t0)
-        self.ui.num_shots.valueChanged.connect(self.update_num_shots)
-        self.ui.exp_time_us.valueChanged.connect(self.update_exp_time_us)
-        self.ui.num_sweeps.valueChanged.connect(self.update_num_sweeps)
-        self.ui.delay_type_list.currentIndexChanged.connect(self.update_delay_type)
-        self.ui.delay_type_list.addItem('Short Stage')
-        self.ui.delay_type_list.addItem('Long Stage')
-        self.ui.delay_type_list.addItem('Pink Laser')
-        
-        # Calibration
-        self.ui.use_calib.toggled.connect(self.update_use_calib)
-        self.ui.calib_pixel_low.valueChanged.connect(self.update_calib)
-        self.ui.calib_pixel_high.valueChanged.connect(self.update_calib)
-        self.ui.calib_wave_low.valueChanged.connect(self.update_calib)
-        self.ui.calib_wave_high.valueChanged.connect(self.update_calib)
-        
-        # Cutoff
-        self.ui.use_cutoff.toggled.connect(self.update_use_cutoff)
-        self.ui.cutoff_pixel_low.valueChanged.connect(self.update_cutoff)
-        self.ui.cutoff_pixel_high.valueChanged.connect(self.update_cutoff)
-        
-        # Launch Run
-        self.ui.run_btn.clicked.connect(self.exec_run_btn)
-        self.ui.stop_btn.clicked.connect(self.exec_stop_btn)
-        self.ui.exit_btn.clicked.connect(self.exec_exit_btn)
-        
-        # Spectra and Kinetic
-        self.ui.kinetic_pixel.valueChanged.connect(self.update_kinetic_pixel)
-        self.ui.spectra_timestep.valueChanged.connect(self.update_spectra_timestep)
-        self.ui.plot_log_t.toggled.connect(self.update_plot_log_t)
-        self.ui.plot_timescale.toggled.connect(self.update_plot_timescale)
-        
-        ### Diagnostics Tab ###
-        
-        # Reference Manipulation
-        self.ui.d_refman_vertical_stretch.valueChanged.connect(self.update_refman)
-        self.ui.d_refman_vertical_offset.valueChanged.connect(self.update_refman)
-        self.ui.d_refman_horiz_offset.valueChanged.connect(self.update_refman)
-        self.ui.d_refman_scale_center.valueChanged.connect(self.update_refman)
-        self.ui.d_refman_scale_factor.valueChanged.connect(self.update_refman)
-        
-        # Calibration
-        self.ui.d_use_calib.toggled.connect(self.update_d_use_calib)
-        self.ui.d_calib_pixel_low.valueChanged.connect(self.update_d_calib)
-        self.ui.d_calib_pixel_high.valueChanged.connect(self.update_d_calib)
-        self.ui.d_calib_wave_low.valueChanged.connect(self.update_d_calib)
-        self.ui.d_calib_wave_high.valueChanged.connect(self.update_d_calib)
-        
-        # Cutoff
-        self.ui.d_use_cutoff.toggled.connect(self.update_d_use_cutoff)
-        self.ui.d_cutoff_pixel_low.valueChanged.connect(self.update_d_cutoff)
-        self.ui.d_cutoff_pixel_high.valueChanged.connect(self.update_d_cutoff)
-        
-        # Aquire Options and Time
-        self.ui.d_shortstage_t0.valueChanged.connect(self.update_d_shortstage_t0)
-        self.ui.d_longstage_t0.valueChanged.connect(self.update_d_longstage_t0)
-        self.ui.d_pinklaser_t0.valueChanged.connect(self.update_d_pinklaser_t0)
-        self.ui.d_num_shots.valueChanged.connect(self.update_d_num_shots)
-        self.ui.d_exp_time_us.valueChanged.connect(self.update_d_exp_time_us)
-        self.ui.d_delay_type_list.currentIndexChanged.connect(self.update_d_delay_type)
-        self.ui.d_delay_type_list.addItem('Short Stage')
-        self.ui.d_delay_type_list.addItem('Long Stage')
-        self.ui.d_delay_type_list.addItem('Pink Laser')
+    def initialize_gui_values(self):
+        # dropdown menus
+        self.ui.a_delaytype_dd.addItem('Short Stage')
+        self.ui.a_delaytype_dd.addItem('Long Stage')
+        self.ui.a_delaytype_dd.addItem('Pink Laser')
+        self.ui.d_delaytype_dd.addItem('Short Stage')
+        self.ui.d_delaytype_dd.addItem('Long Stage')
+        self.ui.d_delaytype_dd.addItem('Pink Laser')
         self.ui.d_display_mode.addItem('Average')
         self.ui.d_display_mode.addItem('Raw')
         self.ui.d_display_mode_spectra.addItem('Probe')
         self.ui.d_display_mode_spectra.addItem('Reference')
-        self.ui.d_time.valueChanged.connect(self.update_d_time)
-        self.ui.d_move_to_time_btn.clicked.connect(self.exec_d_move_to_time)
-        self.ui.d_threshold_pixel.valueChanged.connect(self.update_threshold)
-        self.ui.d_threshold_value.valueChanged.connect(self.update_threshold)
-        self.ui.d_set_linear_corr_btn.clicked.connect(self.exec_d_set_linear_corr_btn)
-        
-        # Launch
-        self.ui.d_run_btn.clicked.connect(self.exec_d_run_btn)
-        self.ui.d_stop_btn.clicked.connect(self.exec_d_stop_btn)
-        self.ui.d_exit_btn.clicked.connect(self.exec_d_exit_btn)
-        
-        self.ui.progressBar.setValue(0)
-        self.metadata = {}
-        self.kinetic_pixel = 0
-        self.spectra_timestep = 0
-        
-        #######################################################################
-        #######################################################################
-        #######################################################################
-        # Section 2: Initializing values in the gui
-        
-        self.times = np.array([0,1,2,3,4,5])
-        self.num_pixels = 1024  # ideally this shouldn't be hard-coded... edit when we set up IR
-        self.ui.filename.setText(os.path.join(os.path.expanduser('~'), 'Documents', 'Data', 'Testing', 'testdata'))
-        self.idle = True
-        self.ui.use_calib.toggle()
-        self.ui.use_cutoff.toggle()
-        self.ui.plot_log_t.toggle()
-        self.ui.plot_log_t.toggle()
-        self.ui.plot_timescale.toggle()
+        self.ui.a_distribution_dd.addItem('Exponential')
+        self.ui.a_distribution_dd.addItem('Linear')
+        self.ui.h_camera_dd.addItem('VIS')
+        self.ui.h_camera_dd.addItem('NIR')
+        # progress bars
+        self.ui.a_measurement_progress_bar.setValue(0)
+        self.ui.a_sweep_progress_bar.setValue(0)
+        # other stuff
+        self.ui.a_filename_le.setText('newfile')
+        self.ui.a_use_calib.toggle()
+        self.ui.a_use_cutoff.toggle()
+        self.ui.a_plot_log_t_cb.toggle()
+        self.ui.a_plot_timescale_cb.toggle()
         self.ui.d_use_linear_corr.setChecked(False)
         self.ui.d_use_reference.setChecked(True)
-        self.ui.d_use_ir_gain.setChecked(False)
-        
-        self.set_reference_manipulation_maxmin_values()
-        
-        if preloaded is False:  # change these values to something sensible
-            self.ui.use_cutoff.setChecked(1)
-            self.ui.cutoff_pixel_low.setValue(30)
-            self.ui.cutoff_pixel_high.setValue(1000)
-            self.ui.use_calib.setChecked(1)
-            self.ui.calib_pixel_low.setValue(200)
-            self.ui.calib_pixel_high.setValue(800)
-            self.ui.calib_wave_low.setValue(400)
-            self.ui.calib_wave_high.setValue(700)
-            self.ui.shortstage_t0.setValue(0)
-            self.ui.longstage_t0.setValue(0)
-            self.ui.pinklaser_t0.setValue(0)
-            self.ui.delay_type_list.setCurrentIndex(1)
-            self.ui.num_shots.setValue(200)
-            self.ui.num_sweeps.setValue(500)
-            self.ui.exp_time_us.setValue(10)
-            self.ui.kinetic_pixel.setValue(600)
-            self.ui.spectra_timestep.setValue(0)
+        # file
+        if self.preloaded is False:
+            self.ui.a_use_cutoff.setChecked(1)
+            self.ui.a_cutoff_pixel_low.setValue(30)
+            self.ui.a_cutoff_pixel_high.setValue(1000)
+            self.ui.a_use_calib.setChecked(1)
+            self.ui.a_calib_pixel_low.setValue(200)
+            self.ui.a_calib_pixel_high.setValue(800)
+            self.ui.a_calib_wave_low.setValue(400)
+            self.ui.a_calib_wave_high.setValue(700)
+            self.ui.a_shortstage_t0.setValue(0)
+            self.ui.a_longstage_t0.setValue(0)
+            self.ui.a_pinklaser_t0.setValue(0)
+            self.ui.a_delaytype_dd.setCurrentIndex(1)
+            self.ui.a_num_shots.setValue(200)
+            self.ui.a_num_sweeps.setValue(500)
             self.ui.d_display_mode.setCurrentIndex(0)
             self.ui.d_display_mode_spectra.setCurrentIndex(0)
             self.ui.d_use_ref_manip.setChecked(1)
@@ -199,45 +120,109 @@ class Editor(QtGui.QMainWindow):
             self.ui.d_refman_vertical_stretch.setValue(1)
             self.ui.d_threshold_pixel.setValue(0)
             self.ui.d_threshold_value.setValue(15000)
-            self.ui.d_exp_time_us.setValue(800)
             self.ui.d_time.setValue(100)
             self.ui.d_use_linear_corr.setChecked(0)
         else:
-            self.ui.use_cutoff.setChecked(pl['use cutoff'])
-            self.ui.cutoff_pixel_low.setValue(pl['cutoff pixel low'])
-            self.ui.cutoff_pixel_high.setValue(pl['cutoff pixel high'])
-            self.ui.use_calib.setChecked(pl['use calib'])
-            self.ui.calib_pixel_low.setValue(pl['calib pixel low'])
-            self.ui.calib_pixel_high.setValue(pl['calib pixel high'])
-            self.ui.calib_wave_low.setValue(pl['calib wavelength low'])
-            self.ui.calib_wave_high.setValue(pl['calib wavelength high'])
-            self.ui.shortstage_t0.setValue(pl['short stage time zero'])
-            self.ui.longstage_t0.setValue(pl['long stage time zero'])
-            self.ui.pinklaser_t0.setValue(pl['pink laser time zero'])
-            self.ui.delay_type_list.setCurrentIndex(pl['delay type'])
-            self.ui.num_shots.setValue(pl['num shots'])
-            self.ui.num_sweeps.setValue(pl['num sweeps'])
-            self.ui.exp_time_us.setValue(pl['exposure time us'])
-            self.ui.kinetic_pixel.setValue(pl['kinetic pixel'])
-            self.ui.spectra_timestep.setValue(pl['spectra timestep'])
-            self.ui.d_display_mode.setCurrentIndex(pl['d display mode'])
-            self.ui.d_display_mode_spectra.setCurrentIndex(pl['d display mode spectra'])
-            self.ui.d_use_ref_manip.setChecked(pl['d use ref manip'])
-            self.ui.d_refman_horiz_offset.setValue(pl['d refman horizontal offset'])
-            self.ui.d_refman_scale_center.setValue(pl['d refman scale center'])
-            self.ui.d_refman_scale_factor.setValue(pl['d refman scale factor'])
-            self.ui.d_refman_vertical_offset.setValue(pl['d refman vertical offset'])
-            self.ui.d_refman_vertical_stretch.setValue(pl['d refman vertical stretch'])
-            self.ui.d_threshold_pixel.setValue(pl['d threshold pixel'])
-            self.ui.d_threshold_value.setValue(pl['d threshold value'])
-            self.ui.d_exp_time_us.setValue(pl['d exposure time us'])
-            self.ui.d_time.setValue(pl['d time'])
+            self.ui.a_use_cutoff.setChecked(self.last_instance_values['use cutoff'])
+            self.ui.a_cutoff_pixel_low.setValue(self.last_instance_values['cutoff pixel low'])
+            self.ui.a_cutoff_pixel_high.setValue(self.last_instance_values['cutoff pixel high'])
+            self.ui.a_use_calib.setChecked(self.last_instance_values['use calib'])
+            self.ui.a_calib_pixel_low.setValue(self.last_instance_values['calib pixel low'])
+            self.ui.a_calib_pixel_high.setValue(self.last_instance_values['calib pixel high'])
+            self.ui.a_calib_wave_low.setValue(self.last_instance_values['calib wavelength low'])
+            self.ui.a_calib_wave_high.setValue(self.last_instance_values['calib wavelength high'])
+            self.ui.a_shortstage_t0.setValue(self.last_instance_values['short stage time zero'])
+            self.ui.a_longstage_t0.setValue(self.last_instance_values['long stage time zero'])
+            self.ui.a_pinklaser_t0.setValue(self.last_instance_values['pink laser time zero'])
+            self.ui.a_delaytype_dd.setCurrentIndex(self.last_instance_values['delay type'])
+            self.ui.a_num_shots.setValue(self.last_instance_values['num shots'])
+            self.ui.a_num_sweeps.setValue(self.last_instance_values['num sweeps'])
+            self.ui.d_display_mode.setCurrentIndex(self.last_instance_values['d display mode'])
+            self.ui.d_display_mode_spectra.setCurrentIndex(self.last_instance_values['d display mode spectra'])
+            self.ui.d_use_ref_manip.setChecked(self.last_instance_values['d use ref manip'])
+            self.ui.d_refman_horiz_offset.setValue(self.last_instance_values['d refman horizontal offset'])
+            self.ui.d_refman_scale_center.setValue(self.last_instance_values['d refman scale center'])
+            self.ui.d_refman_scale_factor.setValue(self.last_instance_values['d refman scale factor'])
+            self.ui.d_refman_vertical_offset.setValue(self.last_instance_values['d refman vertical offset'])
+            self.ui.d_refman_vertical_stretch.setValue(self.last_instance_values['d refman vertical stretch'])
+            self.ui.d_threshold_pixel.setValue(self.last_instance_values['d threshold pixel'])
+            self.ui.d_threshold_value.setValue(self.last_instance_values['d threshold value'])
+            self.ui.d_time.setValue(self.last_instance_values['d time'])
         
-        # check whether this is actually needed
-        # check if this does the right thing...
-        self.initialize_ui()  # to make sure the software picks up the values set when the ui starts up
+    def setup_gui_connections(self):
+        # acquisition file stuff
+        self.ui.a_folder_btn.clicked.connect(self.exec_folder_browse_btn)
+        self.ui.a_filename_le.textChanged.connect(self.update_filepath)
+        self.ui.a_metadata_pump_wavelength.textChanged.connect(self.metadata_changed)
+        self.ui.a_metadata_pump_power.textChanged.connect(self.metadata_changed)
+        self.ui.a_metadata_pump_spotsize.textChanged.connect(self.metadata_changed)
+        self.ui.a_metadata_probe_wavelength.textChanged.connect(self.metadata_changed)
+        self.ui.a_metadata_probe_power.textChanged.connect(self.metadata_changed)
+        self.ui.a_metadata_probe_spotsize.textChanged.connect(self.metadata_changed)
+        # acquisition times options
+        self.ui.a_distribution_dd.currentIndexChanged.connect(self.update_times)
+        self.ui.a_tstart_sb.valueChanged.connect(self.update_times)
+        self.ui.a_tend_sb.valueChanged.connect(self.update_times)
+        self.ui.a_num_tpoints_sb.valueChanged.connect(self.update_times)
+        # aquisition acquire options
+        self.ui.a_shortstage_t0.valueChanged.connect(self.update_shortstage_t0)
+        self.ui.a_longstage_t0.valueChanged.connect(self.update_longstage_t0)
+        self.ui.a_pinklaser_t0.valueChanged.connect(self.update_pinklaser_t0)
+        self.ui.a_num_shots.valueChanged.connect(self.update_num_shots)
+        self.ui.a_num_sweeps.valueChanged.connect(self.update_num_sweeps)
+        self.ui.a_delaytype_dd.currentIndexChanged.connect(self.update_delay_type)
+        # acquisition calibration
+        self.ui.a_use_calib.toggled.connect(self.update_use_calib)
+        self.ui.a_calib_pixel_low.valueChanged.connect(self.update_calib)
+        self.ui.a_calib_pixel_high.valueChanged.connect(self.update_calib)
+        self.ui.a_calib_wave_low.valueChanged.connect(self.update_calib)
+        self.ui.a_calib_wave_high.valueChanged.connect(self.update_calib)
+        # acquisition cutoff
+        self.ui.a_use_cutoff.toggled.connect(self.update_use_cutoff)
+        self.ui.a_cutoff_pixel_low.valueChanged.connect(self.update_cutoff)
+        self.ui.a_cutoff_pixel_high.valueChanged.connect(self.update_cutoff)
+        # acquisition launch
+        self.ui.a_run_btn.clicked.connect(self.exec_run_btn)
+        self.ui.a_stop_btn.clicked.connect(self.exec_stop_btn)
+        self.ui.a_exit_btn.clicked.connect(self.exec_exit_btn)
+        # acquisition plot options
+        self.ui.a_plot_log_t_cb.toggled.connect(self.update_plot_log_t)
+        self.ui.a_plot_timescale_cb.toggled.connect(self.update_plot_timescale)        
+        # diagnostics reference manipulation
+        self.ui.d_refman_vertical_stretch.valueChanged.connect(self.update_refman)
+        self.ui.d_refman_vertical_offset.valueChanged.connect(self.update_refman)
+        self.ui.d_refman_horiz_offset.valueChanged.connect(self.update_refman)
+        self.ui.d_refman_scale_center.valueChanged.connect(self.update_refman)
+        self.ui.d_refman_scale_factor.valueChanged.connect(self.update_refman)
+        # diagnostics calibration
+        self.ui.d_use_calib.toggled.connect(self.update_d_use_calib)
+        self.ui.d_calib_pixel_low.valueChanged.connect(self.update_d_calib)
+        self.ui.d_calib_pixel_high.valueChanged.connect(self.update_d_calib)
+        self.ui.d_calib_wave_low.valueChanged.connect(self.update_d_calib)
+        self.ui.d_calib_wave_high.valueChanged.connect(self.update_d_calib)
+        # diagnostics cutoff
+        self.ui.d_use_cutoff.toggled.connect(self.update_d_use_cutoff)
+        self.ui.d_cutoff_pixel_low.valueChanged.connect(self.update_d_cutoff)
+        self.ui.d_cutoff_pixel_high.valueChanged.connect(self.update_d_cutoff)
+        # diagnstics aquire options
+        self.ui.d_shortstage_t0.valueChanged.connect(self.update_d_shortstage_t0)
+        self.ui.d_longstage_t0.valueChanged.connect(self.update_d_longstage_t0)
+        self.ui.d_pinklaser_t0.valueChanged.connect(self.update_d_pinklaser_t0)
+        self.ui.d_num_shots.valueChanged.connect(self.update_d_num_shots)
+        self.ui.d_delaytype_dd.currentIndexChanged.connect(self.update_d_delay_type)
+        # diagnostics time
+        self.ui.d_time.valueChanged.connect(self.update_d_time)
+        self.ui.d_move_to_time_btn.clicked.connect(self.exec_d_move_to_time)
+        # diagnostics other
+        self.ui.d_threshold_pixel.valueChanged.connect(self.update_threshold)
+        self.ui.d_threshold_value.valueChanged.connect(self.update_threshold)
+        self.ui.d_set_linear_corr_btn.clicked.connect(self.exec_d_set_linear_corr_btn)
+        # diagnostics launch
+        self.ui.d_run_btn.clicked.connect(self.exec_d_run_btn)
+        self.ui.d_stop_btn.clicked.connect(self.exec_d_stop_btn)
+        self.ui.d_exit_btn.clicked.connect(self.exec_d_exit_btn)
         
-    def initialize_ui(self):
+    def initialise_gui(self):
         self.update_calib()
         self.update_cutoff()
         self.update_delay_type()
@@ -256,81 +241,71 @@ class Editor(QtGui.QMainWindow):
         self.update_use_calib()
         self.update_use_cutoff()
         self.update_d_time()
-        self.update_d_exp_time_us()
         
-    def set_reference_manipulation_maxmin_values(self):
-        self.ui.d_refman_horiz_offset.setMinimum(-1000)
-        self.ui.d_refman_horiz_offset.setMaximum(1000)
-        self.ui.d_refman_vertical_offset.setMinimum(-10000)
-        self.ui.d_refman_vertical_offset.setMaximum(10000)
-        self.ui.d_refman_scale_center.setMinimum(0)
-        self.ui.d_refman_scale_center.setMaximum(100)
-        self.ui.d_refman_scale_factor.setMinimum(0)
-        self.ui.d_refman_scale_factor.setMaximum(100)
-        self.ui.d_refman_vertical_stretch.setMinimum(0)
-        self.ui.d_refman_vertical_stretch.setMaximum(100)
-     
-    ###########################################################################
-    ###########################################################################
-    ###########################################################################
-    # Section 3: Methods which define signals connected in Section 1
-        
-    def save_gui_data(self):
-        self.pl['use cutoff'] = 1 if self.ui.use_cutoff.isChecked() else 0
-        self.pl['cutoff pixel low'] = self.ui.cutoff_pixel_low.value()
-        self.pl['cutoff pixel high'] = self.ui.cutoff_pixel_high.value()
-        self.pl['use calib'] = 1 if self.ui.use_calib.isChecked() else 0
-        self.pl['calib pixel low'] = self.ui.calib_pixel_low.value()
-        self.pl['calib pixel high'] = self.ui.calib_pixel_high.value()
-        self.pl['calib wavelength low'] = self.ui.calib_wave_low.value()
-        self.pl['calib wavelength high'] = self.ui.calib_wave_high.value()
-        self.pl['short stage time zero'] = self.ui.shortstage_t0.value()
-        self.pl['long stage time zero'] = self.ui.longstage_t0.value()
-        self.pl['pink laser time zero'] = self.ui.pinklaser_t0.value()
-        self.pl['delay type'] = self.ui.delay_type_list.currentIndex()
-        self.pl['num shots'] = self.ui.num_shots.value()
-        self.pl['num sweeps'] = self.ui.num_sweeps.value()
-        self.pl['exposure time us'] = self.ui.exp_time_us.value()
-        self.pl['kinetic pixel'] = self.ui.kinetic_pixel.value()
-        self.pl['spectra timestep'] = self.ui.spectra_timestep.value()
-        self.pl['d display mode'] = self.ui.d_display_mode.currentIndex()
-        self.pl['d display mode spectra'] = self.ui.d_display_mode_spectra.currentIndex()
-        self.pl['d use ref manip'] = 1 if self.ui.d_use_ref_manip.isChecked() else 0
-        self.pl['d refman horizontal offset'] = self.ui.d_refman_horiz_offset.value()
-        self.pl['d refman scale center'] = self.ui.d_refman_scale_center.value()
-        self.pl['d refman scale factor'] = self.ui.d_refman_scale_factor.value()
-        self.pl['d refman vertical offset'] = self.ui.d_refman_vertical_offset.value()
-        self.pl['d refman vertical stretch'] = self.ui.d_refman_vertical_stretch.value()
-        self.pl['d threshold pixel'] = self.ui.d_threshold_pixel.value()
-        self.pl['d threshold value'] = self.ui.d_threshold_value.value()
-        self.pl['d exposure time us'] = self.ui.d_exp_time_us.value()
-        self.pl['d time'] = self.ui.d_time.value()
-        self.pl.to_csv(self.lif, sep=':', header=False)
+    def save_gui_values(self):
+        self.last_instance_values['use cutoff'] = 1 if self.ui.a_use_cutoff.isChecked() else 0
+        self.last_instance_values['cutoff pixel low'] = self.ui.a_cutoff_pixel_low.value()
+        self.last_instance_values['cutoff pixel high'] = self.ui.a_cutoff_pixel_high.value()
+        self.last_instance_values['use calib'] = 1 if self.ui.a_use_calib.isChecked() else 0
+        self.last_instance_values['calib pixel low'] = self.ui.a_calib_pixel_low.value()
+        self.last_instance_values['calib pixel high'] = self.ui.a_calib_pixel_high.value()
+        self.last_instance_values['calib wavelength low'] = self.ui.a_calib_wave_low.value()
+        self.last_instance_values['calib wavelength high'] = self.ui.a_calib_wave_high.value()
+        self.last_instance_values['short stage time zero'] = self.ui.a_shortstage_t0.value()
+        self.last_instance_values['long stage time zero'] = self.ui.a_longstage_t0.value()
+        self.last_instance_values['pink laser time zero'] = self.ui.a_pinklaser_t0.value()
+        self.last_instance_values['delay type'] = self.ui.a_delaytype_dd.currentIndex()
+        self.last_instance_values['num shots'] = self.ui.a_num_shots.value()
+        self.last_instance_values['num sweeps'] = self.ui.a_num_sweeps.value()
+        self.last_instance_values['d display mode'] = self.ui.d_display_mode.currentIndex()
+        self.last_instance_values['d display mode spectra'] = self.ui.d_display_mode_spectra.currentIndex()
+        self.last_instance_values['d use ref manip'] = 1 if self.ui.d_use_ref_manip.isChecked() else 0
+        self.last_instance_values['d refman horizontal offset'] = self.ui.d_refman_horiz_offset.value()
+        self.last_instance_values['d refman scale center'] = self.ui.d_refman_scale_center.value()
+        self.last_instance_values['d refman scale factor'] = self.ui.d_refman_scale_factor.value()
+        self.last_instance_values['d refman vertical offset'] = self.ui.d_refman_vertical_offset.value()
+        self.last_instance_values['d refman vertical stretch'] = self.ui.d_refman_vertical_stretch.value()
+        self.last_instance_values['d threshold pixel'] = self.ui.d_threshold_pixel.value()
+        self.last_instance_values['d threshold value'] = self.ui.d_threshold_value.value()
+        self.last_instance_values['d time'] = self.ui.d_time.value()
+        self.last_instance_values.to_csv(self.last_instance_filename, sep=':', header=False)
 
+    def exec_h_camera_connect_btn(self):
+        pass
+    
+    def exec_h_camera_disconnect_btn(self):
+        pass
+    
+    def h_update_camera_status(self):
+        pass
+    
+    def set_camera_specific_values(self):
+        # ir gain enable/disable
+        # self.num_pixels
+        # probably some other stuff
+        pass
         
-    def exec_folder_btn(self):
-        '''execute on clicking folder button - store filename and display'''
-        self.filename = QtGui.QFileDialog.getExistingDirectory(None, 'Select Folder', os.path.join(os.path.expanduser('~'), 'Documents' ,'Data'))
-        self.filename = os.path.normpath(self.filename)
-        self.ui.filename.setText(self.filename)
+    def update_filepath(self):
+        self.filename = self.ui.a_filename_le.text()
+        self.filepath = os.path.join(self.datafolder, self.filename)
+        self.ui.a_filepath_le.setText(self.filepath)
         return
-        
-    def exec_file_changed(self):
-        '''execute on filename change - stores filename'''
-        self.filename = self.ui.filename.toPlainText()
+   
+    def exec_folder_browse_btn(self):
+        self.datafolder = QtGui.QFileDialog.getExistingDirectory(None, 'Select Folder', self.datafolder)
+        self.datafolder = os.path.normpath(self.datafolder)
+        self.update_filepath()
         return
         
     def metadata_changed(self):
-        '''executes if any of Pump Wave, Probe Wave, Power or Spot Sizes are changed'''
-        self.metadata['pump wavelength'] = self.ui.metadata_pump_wave.text()
-        self.metadata['pump power'] = self.ui.metadata_pump_power.text()
-        self.metadata['pump size'] = self.ui.metadata_pump_size.text()
-        self.metadata['probe wavelengths'] = self.ui.metadata_probe_wave.text()
-        self.metadata['probe power'] = self.ui.metadata_probe_power.text()
-        self.metadata['probe size'] = self.ui.metadata_probe_power.text()
+        self.metadata['pump wavelength'] = self.ui.a_metadata_pump_wavelength.text()
+        self.metadata['pump power'] = self.ui.a_metadata_pump_power.text()
+        self.metadata['pump size'] = self.ui.a_metadata_pump_spotsize.text()
+        self.metadata['probe wavelengths'] = self.ui.a_metadata_probe_wavelength.text()
+        self.metadata['probe power'] = self.ui.a_metadata_probe_power.text()
+        self.metadata['probe size'] = self.ui.a_metadata_probe_power.text()
     
     def update_metadata(self):
-        '''first step in "run" function'''  # metadata attribute is a dictionary
         self.metadata_changed()
         if self.delay_type == 0:  # as defined in the drop down box in the GUI
             self.metadata['delay type'] = 'Short Stage'
@@ -352,188 +327,110 @@ class Editor(QtGui.QMainWindow):
         self.metadata['avg off shots'] = self.ui.d_use_avg_off_shots.isChecked()
         self.metadata['use ref manip'] = self.ui.d_use_ref_manip.isChecked()
         self.metadata['use calib'] = self.ui.d_use_calib.isChecked()
-        
-        
-    def exec_timefile_folder_btn(self):
-        '''execute on timefile folder button - store filename and update list'''
-        self.timefile = QtGui.QFileDialog.getOpenFileName(None, 'Select File in Folder', 'E:')  # change path
-        self.timefile_folder = os.path.dirname(self.timefile[0])
-        if self.timefile_folder.endswith('/'):
-            self.timefile_folder = self.timefile_folder[:-1]
-        self.timefile = os.path.basename(self.timefile[0])
-        self.load_timefiles_to_list()
-        return
-        
-    def load_timefiles_to_list(self):
-        '''loads all .txt files in timefile folder and puts them in drop down list'''
-        self.ui.timefile_list.clear()
-        self.timefiles = []
-        try:
-            for file in os.listdir(self.timefile_folder):
-                if file.endswith('.tf'):
-                    self.timefiles.append(file)
-            current_index = 0
-            for i,timefile in enumerate(self.timefiles):
-                self.ui.timefile_list.addItem(timefile)
-                if timefile == self.timefile:
-                    current_index = i
-            self.ui.timefile_list.setCurrentIndex(current_index)
-            self.update_timefile(current_index)
-        except:
-            self.append_history('Error loading timefiles in folder')
-        return
-        
-    def update_timefile(self,i):
-        '''execute when new timefile selected'''
-        self.timefile = self.timefiles[self.ui.timefile_list.currentIndex()]
-        self.update_times()
-        return
-        
+    
     def update_times(self):
-        '''load times from timefile and store them'''
-        self.times = np.genfromtxt(self.timefile_folder+'/'+self.timefile,dtype=float)
+        distribution = self.ui.a_distribution_dd.currentText()
+        if distribution == 'Linear':
+            self.ui.a_num_tpoints_sb.setMinimum(5)
+        else:
+            self.ui.a_num_tpoints_sb.setMinimum(25)
+        start_time = self.ui.a_tstart_sb.value()
+        end_time = self.ui.a_tend_sb.value()
+        num_points = self.ui.a_num_tpoints_sb.value()
+        times = np.linspace(start_time, end_time, num_points)
+        if distribution == 'Exponential':
+            times = self.calculate_times_exponential(start_time, end_time, num_points)
+        self.times = times
+        self.display_times()
         return
-        
-    def exec_timefile_new_blank_btn(self):
-        '''opens blank notepad to create timefile, ensure to save as .tf'''
-        subprocess.call(['notepad.exe'])
-        self.load_timefiles_to_list()
+    
+    def display_times(self):
+        self.ui.a_times_list.clear()
+        for time in self.times:
+            self.ui.a_times_list.appendPlainText('{0:.2f}'.format(time))
         return
-        
-    def exec_timefile_edit_btn(self):
-        '''executes when timefile edit button clicked - opens notepad and throws
-           error when no timefile was initially selected'''
-        try:
-            subprocess.call(['notepad.exe',self.timefile_folder+'/'+self.timefile])
-            self.update_times()
-        except:
-            self.ui.history.appendPlainText('Error loading times: make sure to select timefile')
-        return
-        
-    def exec_timefile_new_params_btn(self):
-        '''creates a new timefile from the parameters listed on the gui'''
-        mins = [self.ui.timefile_t1_min,self.ui.timefile_t2_min,self.ui.timefile_t3_min]
-        maxes = [self.ui.timefile_t1_max,self.ui.timefile_t2_max,self.ui.timefile_t3_max]
-        steps = [self.ui.timefile_t1_steps,self.ui.timefile_t2_steps,self.ui.timefile_t3_steps]
-        uses = [self.ui.timefile_uset1, self.ui.timefile_uset2, self.ui.timefile_uset3]
-        logs = [self.ui.timefile_logt1, self.ui.timefile_logt2, self.ui.timefile_logt3]
-        new_times = []
-        for use,log,_min,_max,_steps in zip(uses,logs,mins,maxes,steps):
-            if use.isChecked():
-                if log.isChecked():
-                    for value in np.logspace(np.log10(_min.value()),np.log10(_max.value()),num=_steps.value(),dtype=np.float64):  # data type changed from int
-                        new_times.append(value)
-                else:
-                    for value in np.linspace(_min.value(),_max.value(),num=_steps.value(),dtype=np.float64):  # data type changed from int
-                        new_times.append(value)
-        try:
-            new_filename = QtGui.QFileDialog.getSaveFileName(None,'Save File As:',self.timefile_folder)
-        except:
-            self.append_history('Error Saving Timefile: Make sure a timefile folder is selected')
-        new_filename = new_filename[0]
-        if new_filename[-3:] != '.tf':
-            new_filename = new_filename+'.tf'
-        np.savetxt(new_filename,new_times,fmt='%f',newline='\r\n')  # changed format string to write floats
-        self.load_timefiles_to_list()
-        return
+    
+    @staticmethod
+    def calculate_times_exponential(start_time, end_time, num_points):
+        num_before_zero = 20
+        step = 0.1
+        before_zero = np.linspace(start_time, 0, num_before_zero, endpoint=False)
+        zero_onwards = np.geomspace(step, end_time+step, num_points-num_before_zero)-step
+        times = np.concatenate((before_zero, zero_onwards))
+        return times
         
     def update_shortstage_t0(self):
-        '''executes when the short stage time t0 is changed - keeps consistent between tabs'''
-        self.shortstage_t0 = self.ui.shortstage_t0.value()
+        self.shortstage_t0 = self.ui.a_shortstage_t0.value()
         self.ui.d_shortstage_t0.setValue(self.shortstage_t0)
         return
         
     def update_d_shortstage_t0(self):
-        '''diagostics tab equivalent to update_shortstage_t0'''
         self.shortstage_t0 = self.ui.d_shortstage_t0.value()
-        self.ui.shortstage_t0.setValue(self.shortstage_t0)
+        self.ui.a_shortstage_t0.setValue(self.shortstage_t0)
         return
         
     def update_longstage_t0(self):
-        '''executes when the long stage time t0 is changed - keeps consistent between tabs'''
-        self.longstage_t0 = self.ui.longstage_t0.value()
+        self.longstage_t0 = self.ui.a_longstage_t0.value()
         self.ui.d_longstage_t0.setValue(self.longstage_t0)
         return
         
     def update_d_longstage_t0(self):
-        '''diagnostics tab equivalent to update_longstage_t0'''
         self.longstage_t0 = self.ui.d_longstage_t0.value()
-        self.ui.longstage_t0.setValue(self.longstage_t0)
+        self.ui.a_longstage_t0.setValue(self.longstage_t0)
         return
     
     def update_pinklaser_t0(self):
-        '''executes when the pink laser time t0 is changed - keeps consistent between tabs'''
-        self.pinklaser_t0 = self.ui.pinklaser_t0.value()
+        self.pinklaser_t0 = self.ui.a_pinklaser_t0.value()
         self.ui.d_pinklaser_t0.setValue(self.pinklaser_t0)
         return
         
     def update_d_pinklaser_t0(self):
-        '''diagnostics tab equivalent to update_pinklaser_t0'''
         self.pinklaser_t0 = self.ui.d_pinklaser_t0.value()
-        self.ui.pinklaser_t0.setValue(self.pinklaser_t0)
+        self.ui.a_pinklaser_t0.setValue(self.pinklaser_t0)
         return
         
-    def update_num_shots(self):  # What is the number of shots? Is it the number of measurements per delay stage position?
-        '''executes when the number of shotes is updated - note that this is total
-           number of shots and is shots/2 number of TA averages'''
+    def update_num_shots(self):
         if self.idle is True:
-            self.num_shots = self.ui.num_shots.value()
+            self.num_shots = self.ui.a_num_shots.value()
             self.ui.d_num_shots.setValue(self.num_shots)
         return
         
     def update_d_num_shots(self):
-        '''diagnostic equivalent of update_num_shots'''
         if self.idle is True:
             self.num_shots = self.ui.d_num_shots.value()
-            self.ui.num_shots.setValue(self.num_shots)
-        return
-    
-    def update_exp_time_us(self):
-        '''executes when the exposure time is updated - DOES NOT keep consistent between tabs'''
-        self.exp_time_us = self.ui.exp_time_us.value()
-        return
-    
-    def update_d_exp_time_us(self):
-        '''executes when the diagnostics exposure time is updated - DOES NOT keep consistent between tabs'''
-        self.d_exp_time_us = self.ui.d_exp_time_us.value()
+            self.ui.a_num_shots.setValue(self.num_shots)
         return
             
-    def update_num_sweeps(self):  # What is the number of sweeps? Is it the number of runs of the experiment?
-        '''executes when the number of sweeps changes'''
+    def update_num_sweeps(self):
         if self.idle is True:
-            self.num_sweeps = self.ui.num_sweeps.value()
+            self.num_sweeps = self.ui.a_num_sweeps.value()
         return
         
     def update_delay_type(self):
-        '''updates when delay types (short vs long vs pink laser) has changed'''
-        self.delay_type = self.ui.delay_type_list.currentIndex()
-        self.ui.d_delay_type_list.setCurrentIndex(self.delay_type)
+        self.delay_type = self.ui.a_delaytype_dd.currentIndex()
+        self.ui.d_delaytype_dd.setCurrentIndex(self.delay_type)
         return
         
     def update_d_delay_type(self):
-        '''diagnostic equivalent of update_delay_type'''
-        self.delay_type = self.ui.d_delay_type_list.currentIndex()
-        self.ui.delay_type_list.setCurrentIndex(self.delay_type)
+        self.delay_type = self.ui.d_delaytype_dd.currentIndex()
+        self.ui.a_delaytype_dd.setCurrentIndex(self.delay_type)
         return
         
     def update_use_calib(self):
-        '''stores calibration boolean'''
-        self.use_calib = self.ui.use_calib.isChecked()
+        self.use_calib = self.ui.a_use_calib.isChecked()
         self.ui.d_use_calib.setChecked(self.use_calib)
         return
         
     def update_d_use_calib(self):
-        '''diagnostic equivalent of update_use_calib'''
         self.use_calib = self.ui.d_use_calib.isChecked()
-        self.ui.use_calib.setChecked(self.use_calib)
+        self.ui.a_use_calib.setChecked(self.use_calib)
         return
         
     def update_calib(self):
-        '''stores calibration data when values change'''
-        self.calib  = [self.ui.calib_pixel_low.value(),
-                       self.ui.calib_pixel_high.value(),
-                       self.ui.calib_wave_low.value(),
-                       self.ui.calib_wave_high.value()]
+        self.calib  = [self.ui.a_calib_pixel_low.value(),
+                       self.ui.a_calib_pixel_high.value(),
+                       self.ui.a_calib_wave_low.value(),
+                       self.ui.a_calib_wave_high.value()]
         self.ui.d_calib_pixel_low.setValue(self.calib[0])
         self.ui.d_calib_pixel_high.setValue(self.calib[1])
         self.ui.d_calib_wave_low.setValue(self.calib[2])
@@ -541,34 +438,30 @@ class Editor(QtGui.QMainWindow):
         return
         
     def update_d_calib(self):
-        '''diagnostic equivalent of update_calib'''
         self.calib  = [self.ui.d_calib_pixel_low.value(),
                        self.ui.d_calib_pixel_high.value(),
                        self.ui.d_calib_wave_low.value(),
                        self.ui.d_calib_wave_high.value()]
-        self.ui.calib_pixel_low.setValue(self.calib[0])
-        self.ui.calib_pixel_high.setValue(self.calib[1])
-        self.ui.calib_wave_low.setValue(self.calib[2])
-        self.ui.calib_wave_high.setValue(self.calib[3])
+        self.ui.a_calib_pixel_low.setValue(self.calib[0])
+        self.ui.a_calib_pixel_high.setValue(self.calib[1])
+        self.ui.a_calib_wave_low.setValue(self.calib[2])
+        self.ui.a_calib_wave_high.setValue(self.calib[3])
         return
              
     def update_use_cutoff(self):
-        '''stores cutoff boolean'''
-        self.use_cutoff = self.ui.use_cutoff.isChecked()
+        self.use_cutoff = self.ui.a_use_cutoff.isChecked()
         self.ui.d_use_cutoff.setChecked(self.use_cutoff)
         return
         
     def update_d_use_cutoff(self):
-        '''diagnostic equivalent of use_cutoff'''
         self.use_cutoff = self.ui.d_use_cutoff.isChecked()
-        self.ui.use_cutoff.setChecked(self.use_cutoff)
+        self.ui.a_use_cutoff.setChecked(self.use_cutoff)
         return
              
     def update_cutoff(self):
-        '''stores cutoff data when values change'''
-        if self.ui.cutoff_pixel_high.value() > self.ui.cutoff_pixel_low.value():
-            self.cutoff = [self.ui.cutoff_pixel_low.value(),
-                           self.ui.cutoff_pixel_high.value()]
+        if self.ui.a_cutoff_pixel_high.value() > self.ui.a_cutoff_pixel_low.value():
+            self.cutoff = [self.ui.a_cutoff_pixel_low.value(),
+                           self.ui.a_cutoff_pixel_high.value()]
             self.ui.d_cutoff_pixel_low.setValue(self.cutoff[0])
             self.ui.d_cutoff_pixel_high.setValue(self.cutoff[1])
         else:
@@ -576,44 +469,24 @@ class Editor(QtGui.QMainWindow):
         return
               
     def update_d_cutoff(self):
-        '''diagnostic equivalent of update_cutoff'''
         if self.ui.d_cutoff_pixel_high.value() > self.ui.d_cutoff_pixel_low.value():
             self.cutoff = [self.ui.d_cutoff_pixel_low.value(),
                            self.ui.d_cutoff_pixel_high.value()]
-            self.ui.cutoff_pixel_low.setValue(self.cutoff[0])
-            self.ui.cutoff_pixel_high.setValue(self.cutoff[1])
+            self.ui.a_cutoff_pixel_low.setValue(self.cutoff[0])
+            self.ui.a_cutoff_pixel_high.setValue(self.cutoff[1])
         else:
             self.append_history('Cutoff Values Incompatible')
         return
         
-    def update_kinetic_pixel(self):
-        '''stores value for which pixel to display kinetic in graph'''
-        self.kinetic_pixel = self.ui.kinetic_pixel.value()
-        if self.kinetic_pixel > self.num_pixels:
-            self.kinetic_pixel = self.num_pixels-1
-        self.ui.kinetic_pixel.setValue(self.kinetic_pixel)
-        return
-        
-    def update_spectra_timestep(self):
-        '''stores values for which timestep to display spectra in graph'''
-        self.spectra_timestep = self.ui.spectra_timestep.value()
-        if self.spectra_timestep > len(self.times):
-            self.spectra_timestep = len(self.times)-1
-        self.ui.spectra_timestep.setValue(self.spectra_timestep)
-        return
-        
     def update_plot_log_t(self):
-        '''stores booliean for logscale'''
-        self.use_logscale = self.ui.plot_log_t.isChecked()
+        self.use_logscale = self.ui.a_plot_log_t_cb.isChecked()
         return
         
     def update_plot_timescale(self):
-        '''stores boolean for using actual times'''
-        self.use_actual_times = self.ui.plot_timescale.isChecked()
+        self.use_actual_times = self.ui.a_plot_timescale_cb.isChecked()
         return
         
     def update_refman(self):
-        '''stores referance manipulation data'''
         self.refman = [self.ui.d_refman_vertical_stretch.value(),
                        self.ui.d_refman_vertical_offset.value(),
                        self.ui.d_refman_horiz_offset.value(),
@@ -622,50 +495,41 @@ class Editor(QtGui.QMainWindow):
         return
         
     def update_threshold(self):
-        '''stores threshold information for tiggering'''
         self.threshold = [self.ui.d_threshold_pixel.value(),
                           self.ui.d_threshold_value.value()]
         return
         
     def update_d_time(self):
-        '''stores time to move to in diagnostics'''
         self.d_time = self.ui.d_time.value()
         return
         
     def exec_d_set_linear_corr_btn(self):
-        '''exectues routine to recalculate linear pixel correction'''
         try:
             self.linear_corr = self.bgd.set_linear_pixel_correlation()
             self.append_history('Successfully set linear pixel correction')
             print(self.linear_corr)
         except:
             self.append_history('Error setting linear pixel correction')
+        return
         
-    def append_history(self,message):
-        self.ui.history.appendPlainText(message)
+    def append_history(self, message):
+        self.ui.a_history.appendPlainText(message)
         self.ui.d_history.appendPlainText(message)
-        
-    def update_progress_bar(self,i):
-        self.ui.progressBar.setValue(i)
-        
-    ###########################################################################
-    ###########################################################################
-    ###########################################################################
-    # Section 4: Plots
+        return
                        
     def create_plots(self):
         '''defines defaults for each graph'''
-        self.ui.last_shot_graph.plotItem.setLabels(left='dtt',bottom='Wavelength / Pixel')
-        self.ui.last_shot_graph.plotItem.showAxis('top',show=True)
-        self.ui.last_shot_graph.plotItem.showAxis('right',show=True)
+        self.ui.a_last_shot_graph.plotItem.setLabels(left='dtt',bottom='Wavelength / Pixel')
+        self.ui.a_last_shot_graph.plotItem.showAxis('top',show=True)
+        self.ui.a_last_shot_graph.plotItem.showAxis('right',show=True)
         
-        self.ui.kinetic_graph.plotItem.setLabels(left='dtt',bottom='Time / Timepoint')
-        self.ui.kinetic_graph.plotItem.showAxis('top',show=True)
-        self.ui.kinetic_graph.plotItem.showAxis('right',show=True)
+        self.ui.a_kinetic_graph.plotItem.setLabels(left='dtt',bottom='Time / Timepoint')
+        self.ui.a_kinetic_graph.plotItem.showAxis('top',show=True)
+        self.ui.a_kinetic_graph.plotItem.showAxis('right',show=True)
         
-        self.ui.spectra_graph.plotItem.setLabels(left='dtt',bottom='Wavelength / Pixel')
-        self.ui.spectra_graph.plotItem.showAxis('top',show=True)
-        self.ui.spectra_graph.plotItem.showAxis('right',show=True)
+        self.ui.a_spectra_graph.plotItem.setLabels(left='dtt',bottom='Wavelength / Pixel')
+        self.ui.a_spectra_graph.plotItem.showAxis('top',show=True)
+        self.ui.a_spectra_graph.plotItem.showAxis('right',show=True)
         
         self.ui.d_last_shot_graph.plotItem.setLabels(left='dtt',bottom='Wavelength / Pixel') 
         self.ui.d_last_shot_graph.plotItem.showAxis('top',show=True)
@@ -682,16 +546,6 @@ class Editor(QtGui.QMainWindow):
         self.ui.d_probe_ref_graph.plotItem.setLabels(left='Counts',bottom='Wavelength / Pixel')
         self.ui.d_probe_ref_graph.plotItem.showAxis('top',show=True)
         self.ui.d_probe_ref_graph.plotItem.showAxis('right',show=True)
-        self.lr = pg.LinearRegionItem([self.calib[2],self.calib[3]])
-        self.lr.setZValue(-10)
-        self.ui.d_probe_ref_graph.addItem(self.lr)
-        self.lr.sigRegionChanged.connect(self.region_updated)
-        return
-        
-    def region_updated(self,regionItem):
-        px1,px2 = regionItem.getRegion()
-        self.ui.d_vline1.display(px1)
-        self.ui.d_vline2.display(px2)
         return
         
     def create_plot_waves_and_times(self):
@@ -871,6 +725,15 @@ class Editor(QtGui.QMainWindow):
         msg = QtGui.QMessageBox()
         msg.setIcon(QtGui.QMessageBox.Information)
         msg.setText("Error Saving File")
+        msg.setStandardButtons(QtGui.QMessageBox.Ok)
+        retval = msg.exec_()
+        return retval
+    
+    def message_unsafe_exit(self):
+        msg = QtGui.QMessageBox()
+        msg.setIcon(QtGui.QMessageBox.Information)
+        msg.setText('cannot close application')
+        msg.setInformativeText('stop acquisition and disconnect from camera')
         msg.setStandardButtons(QtGui.QMessageBox.Ok)
         retval = msg.exec_()
         return retval
@@ -1067,7 +930,7 @@ class Editor(QtGui.QMainWindow):
             
     def run(self):
         self.update_metadata()
-        self.current_sweep = SweepProcessing(self.times,self.num_pixels,self.filename,self.metadata)    
+        self.current_sweep = SweepProcessing(self.times,self.num_pixels,self.filepath,self.metadata)    
         
         self.camera.data_ready.disconnect(self.post_acquire_bgd)
         self.camera.data_ready.connect(self.post_acquire)
@@ -1306,26 +1169,26 @@ class Editor(QtGui.QMainWindow):
         '''function which allows changing time delay from diagnostics tab'''
         self.move(self.d_time)
         return
-        
-    ###########################################################################        
-    ###########################################################################
-    ###########################################################################
-    # Section 7: launches gui and creates plots
+
         
 def main():
+    
+    # create application
+    QtGui.QApplication.setStyle('Fusion')
     app = QtGui.QApplication(sys.argv)
+    
+    # load the parameter values from last time and launch GUI
     last_instance_filename = 'last_instance_values.txt'
-    try:
-        last_instance_values = pd.read_csv(last_instance_filename, sep=':', header=None, index_col=0, squeeze=True)
-        ex = Editor(last_instance_filename, pl=last_instance_values, preloaded=True)
-    except:
-        ex = Editor(last_instance_filename)
-
+    last_instance_values = pd.read_csv(last_instance_filename, sep=':', header=None, index_col=0, squeeze=True)
+    
+    ex = Application(last_instance_filename, last_instance_values=last_instance_values, preloaded=True)
+    
     ex.show()
     ex.create_plots()
+    
+    # kill application
     sys.exit(app.exec_())
-    
-    
+   
 
 if __name__ == '__main__':
     main()

@@ -13,8 +13,8 @@ delay type:2.0
 num shots:500.0
 num sweeps:5.0
 exposure time us:10.0
-kinetic pixel:652.0
-spectra timestep:7.0
+kinetic pixel:511.0
+spectra timestep:5.0
 d use ref manip:1.0
 d display mode:0.0
 d display mode spectra:0.0
