@@ -9,11 +9,14 @@ calib wavelength high:700.0
 short stage time zero:0.0
 long stage time zero:0.0
 pink laser time zero:2668.0
-delay type:2.0
+delay type:0
+distribution:0
+tstart:-5
+tend:100
+num tpoints:100
 num shots:100.0
 num sweeps:20.0
 d use ref manip:0.0
-d display mode:0.0
 d display mode spectra:0.0
 d refman horizontal offset:8.0
 d refman scale center:100.0
@@ -23,3 +26,4 @@ d refman vertical stretch:1.83
 d threshold pixel:1.0
 d threshold value:20000.0
 d time:0.0
+d jogstep:0.01

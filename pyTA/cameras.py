@@ -14,6 +14,11 @@ class Acquisition(QObject):
         self.camera.array = np.zeros((self.camera.number_of_scans+10, self.camera.pixels*2), dtype=np.dtype(np.int32))
         self.camera.data = self.camera.array[10:]
         
+    def update_number_of_scans(self, number_of_scans):
+        self.camera.number_of_scans = number_of_scans
+        self.camera.array = np.zeros((self.camera.number_of_scans+10, self.camera.pixels*2), dtype=np.dtype(np.int32))
+        self.camera.data = self.camera.array[10:]
+        
     start_acquire = pyqtSignal()
     data_ready = pyqtSignal(np.ndarray, np.ndarray, int, int)
     @pyqtSlot()
@@ -24,7 +29,7 @@ class Acquisition(QObject):
         return
 
 
-class StresingCamera(QObject):
+class StresingCameras(QObject):
     
     def __init__(self, cameratype, use_ir_gain=False):
         super(QObject, self).__init__()
