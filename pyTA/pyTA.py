@@ -44,13 +44,14 @@ class Application(QtGui.QMainWindow):
         self.timeunits = 'ps'
         self.xlabel = 'Wavelength / Pixel'
         self.datafolder = os.path.join(os.path.expanduser('~'), 'Documents')
-        self.timefolder = os.path.join(os.path.expanduser('~'), 'Documents')
+        self.timefile_folder = os.path.join(os.path.expanduser('~'), 'Documents')
         self.initialize_gui_values()
         self.setup_gui_connections()
         self.metadata = {}
         self.idle = True
         self.finished_acquisition = False
         self.safe_to_exit = True
+        self.initialise_gui()
         self.show()
         self.write_app_status('application launched', colour='blue')
         
@@ -96,7 +97,6 @@ class Application(QtGui.QMainWindow):
         self.ui.a_use_calib.toggle()
         self.ui.a_use_cutoff.toggle()
         self.ui.a_plot_log_t_cb.toggle()
-        self.ui.a_plot_timescale_cb.toggle()
         self.ui.d_use_linear_corr.setChecked(False)
         self.ui.d_use_reference.setChecked(True)
         # file
@@ -185,7 +185,7 @@ class Application(QtGui.QMainWindow):
         self.ui.a_num_tpoints_sb.valueChanged.connect(self.update_times)
         self.ui.a_timefile_cb.toggled.connect(self.update_use_timefile)
         self.ui.a_timefile_btn.clicked.connect(self.exec_timefile_folder_btn)
-        self.ui.a_timefile_btn.currentIndexChanged.connect(self.update_times_from_file)
+        self.ui.a_timefile_list.currentIndexChanged.connect(self.update_times_from_file)
         # aquisition acquire options
         self.ui.a_shortstage_t0.valueChanged.connect(self.update_shortstage_t0)
         self.ui.a_longstage_t0.valueChanged.connect(self.update_longstage_t0)
@@ -232,8 +232,8 @@ class Application(QtGui.QMainWindow):
         self.ui.d_time.valueChanged.connect(self.update_d_time)
         self.ui.d_move_to_time_btn.clicked.connect(self.exec_d_move_to_time)
         self.ui.d_jogstep_sb.valueChanged.connect(self.update_d_jogstep)
-        self.ui.d_jog_earlier.clicked.connect(self.d_jog_earlier)
-        self.ui.d_jog_later.clicked.connect(self.d_jog_later)
+        self.ui.d_jogleft.clicked.connect(self.d_jog_earlier)
+        self.ui.d_jogright.clicked.connect(self.d_jog_later)
         self.ui.d_set_current_btn.clicked.connect(self.exec_d_set_current_btn)
         # diagnostics other
         self.ui.d_threshold_pixel.valueChanged.connect(self.update_threshold)
@@ -309,8 +309,8 @@ class Application(QtGui.QMainWindow):
     def exec_h_camera_connect_btn(self):
         self.ui.h_connect_camera_btn.setEnabled(False)
         self.ui.h_camera_dd.setEnabled(False)
-        self.camera = StresingCameras(self.cameratype, self.use_ir_gain)
         self.h_update_camera_status('initialising... please wait')
+        self.camera = StresingCameras(self.cameratype, self.use_ir_gain)
         self.camera.initialise()
         self.h_update_camera_status('ready')
         self.ui.h_disconnect_camera_btn.setEnabled(True)
@@ -342,7 +342,7 @@ class Application(QtGui.QMainWindow):
         return
     
     def update_use_ir_gain(self):
-        self.use_ir_gain = self.h_use_ir_gain.isChecked()
+        self.use_ir_gain = self.ui.h_use_ir_gain.isChecked()
         self.ui.d_use_ir_gain.setChecked(self.use_ir_gain)
         return
     
@@ -353,17 +353,19 @@ class Application(QtGui.QMainWindow):
             self.ui.d_use_linear_corr.setEnabled(True)
             self.ui.d_set_linear_corr_btn.setEnabled(True)
             self.use_ir_gain = True if self.h_use_ir_gain.isChecked() else False
+            self.num_pixels = 512
         else:
             self.ui.d_use_linear_corr.setChecked(False)
             self.ui.d_use_linear_corr.setEnabled(False)
             self.ui.d_set_linear_corr_btn.setEnabled(False)
             self.use_ir_gain = False
-        self.num_pixels = self.camera.num_pixels
+            self.num_pixels = 1024
         return
     
     def exec_h_delay_connect_btn(self):
         self.ui.h_connect_delay_btn.setEnabled(False)
         self.ui.h_delay_dd.setEnabled(False)
+        self.h_update_delay_status('initialising... please wait')
         if self.delay_type == 2:  # short stage
             self.append_history('Connecting to short delay stage')
             self.delay = PIShortStageDelay(self.shortstage_t0)
@@ -373,7 +375,6 @@ class Application(QtGui.QMainWindow):
         else:  # pink laser
             self.append_history('Connecting to delay generator')
             self.delay = InnolasPinkLaserDelay(self.pinklaser_t0)
-        self.h_update_delay_status('initialising... please wait')
         self.delay.initialise()
         self.h_update_delay_status('ready')
         self.ui.h_disconnect_delay_btn.setEnabled(True)
@@ -403,8 +404,8 @@ class Application(QtGui.QMainWindow):
     
     def update_delaytype(self):
         self.delay_type = self.ui.h_delay_dd.currentIndex()
-        self.d_delaytype_dd.setCurrentIndex(self.delay_type)
-        self.a_delaytype_dd.setCurrentIndex(self.delay_type)
+        self.ui.d_delaytype_dd.setCurrentIndex(self.delay_type)
+        self.ui.a_delaytype_dd.setCurrentIndex(self.delay_type)
         if self.delay_type == 2:  # short stage
             self.ui.a_longstage_t0.setEnabled(False)
             self.ui.d_longstage_t0.setEnabled(False)
@@ -489,8 +490,10 @@ class Application(QtGui.QMainWindow):
         distribution = self.ui.a_distribution_dd.currentText()
         if distribution == 'Linear':
             self.ui.a_num_tpoints_sb.setMinimum(5)
+            self.ui.a_plot_log_t_cb.setChecked(False)
         else:
             self.ui.a_num_tpoints_sb.setMinimum(25)
+            self.ui.a_plot_log_t_cb.setChecked(True)
         start_time = self.ui.a_tstart_sb.value()
         end_time = self.ui.a_tend_sb.value()
         num_points = self.ui.a_num_tpoints_sb.value()
@@ -747,9 +750,9 @@ class Application(QtGui.QMainWindow):
         self.ui.d_probe_ref_graph.plotItem.showAxis('right', show=True)
         
         self.probe_error_region = pg.FillBetweenItem(brush=(255, 0, 0, 50))
-        self.ui.d_probe_ref_graph.addItem(self.probe_error_region)
-        self.ref_error_region = pd.FillBetweenItem(brush=(0, 255, 0, 50))
-        self.ui.d_probe_ref_graph.addItem(self.ref_error_region)
+        #self.ui.d_probe_ref_graph.addItem(self.probe_error_region)
+        self.ref_error_region = pg.FillBetweenItem(brush=(0, 0, 255, 50))
+        #self.ui.d_probe_ref_graph.addItem(self.ref_error_region)
         return
     
     def set_waves_and_times_axes(self):
@@ -766,12 +769,13 @@ class Application(QtGui.QMainWindow):
     def create_plot_waves_and_times(self):
         self.set_waves_and_times_axes()
         # sort out logscale for kinetics plot
-        if self.use_logscale is True:
-            plot_times = np.log10(self.plot_times)
-            self.plot_kinetic_avg = self.current_sweep.avg_data[np.isfinite(plot_times), self.kinetic_pixel]
-            self.plot_times = self.plot_times[np.isfinite(plot_times)]
-        else:
-            self.plot_kinetic_avg = self.current_sweep.avg_data[:, self.kinetic_pixel]
+        if not self.diagnostics_on:
+            if self.use_logscale is True:
+                plot_times = np.log10(self.plot_times)
+                self.plot_kinetic_avg = self.current_sweep.avg_data[np.isfinite(plot_times), self.kinetics_pixel]
+                self.plot_times = self.plot_times[np.isfinite(plot_times)]
+            else:
+                self.plot_kinetic_avg = self.current_sweep.avg_data[:, self.kinetics_pixel]
         
         if self.diagnostics_on is False:
             self.plot_dtt = self.current_sweep.avg_data[:]
@@ -817,7 +821,7 @@ class Application(QtGui.QMainWindow):
         return
         
     def top_plot(self):
-        self.ui.a_colourmap.setImage(self.plot_dtt, scale=(len(self.plot_waves)/len(self.plot_times), 1))
+        self.ui.a_colourmap.setImage(self.plot_dtt, scale=(len(self.plot_waves)/len(self.times), 1))
         return
     
     def add_time_marker(self):
@@ -833,12 +837,13 @@ class Application(QtGui.QMainWindow):
         self.spectrum_time = self.time_marker.value()
         self.time_pixel = np.where((self.plot_times-self.spectrum_time)**2 == min((self.plot_times-self.spectrum_time)**2))[0][0]
         if self.finished_acquisition:
+            self.create_plot_waves_and_times()
             self.spec_plot()
         return
     
     def add_wavelength_marker(self):
         self.wavelength_marker = pg.InfiniteLine(self.plot_waves[int(len(self.plot_waves)/2)], movable=True, bounds=[self.plot_waves[0], self.plot_waves[-1]])
-        self.ui.a_spectrum_graph.addItem(self.wavelength_marker)
+        self.ui.a_spectra_graph.addItem(self.wavelength_marker)
         self.wavelength_marker.sigPositionChangeFinished.connect(self.update_kinetics_wavelength)
         self.wavelength_marker_label = pg.InfLineLabel(self.wavelength_marker, text='{value:.2f}nm', movable=True, position=0.9)
         self.update_kinetics_wavelength()
@@ -848,15 +853,23 @@ class Application(QtGui.QMainWindow):
         self.kinetics_wavelength = self.wavelength_marker.value()
         self.kinetics_pixel = np.where((self.plot_waves-self.kinetics_wavelength)**2 == min((self.plot_waves-self.kinetics_wavelength)**2))[0][0]
         if self.finished_acquisition:
+            self.create_plot_waves_and_times()
             self.kin_plot()
         return
         
     def kin_plot(self):
-        self.ui.kinetic_graph.plotItem.plot(self.plot_times, self.plot_kinetic_avg, pen='b', symbol='s', symbolPen='b', symbolBrush=None, symbolSize=4, clear=True)
+        for item in self.ui.a_kinetic_graph.plotItem.listDataItems():
+            self.ui.a_kinetic_graph.plotItem.removeItem(item)
+        if self.current_sweep.sweep_index == 0:
+            self.ui.a_kinetic_graph.plotItem.plot(self.plot_times[0:self.timestep+1], self.plot_kinetic_avg[0:self.timestep+1], pen='b', symbol='s', symbolPen='b', symbolBrush=None, symbolSize=4, clear=False)
+        else:
+            self.ui.a_kinetic_graph.plotItem.plot(self.plot_times, self.plot_kinetic_avg, pen='b', symbol='s', symbolPen='b', symbolBrush=None, symbolSize=4, clear=False)
         return
         
     def spec_plot(self):
-        self.ui.a_spectra_graph.plotItem.plot(self.plot_waves, self.plot_dtt[self.time_pixel,:], pen='g', clear=True)
+        for item in self.ui.a_spectra_graph.plotItem.listDataItems():
+            self.ui.a_spectra_graph.plotItem.removeItem(item)
+        self.ui.a_spectra_graph.plotItem.plot(self.plot_waves, self.plot_dtt[self.time_pixel,:], pen='g', clear=False)
         return
         
     def d_error_plot(self):
@@ -876,17 +889,17 @@ class Application(QtGui.QMainWindow):
             self.ui.d_probe_ref_graph.plotItem.removeItem(item)
         probe_std = np.std(self.plot_probe_on_array, axis=0)
         self.ui.d_probe_ref_graph.plotItem.plot(self.plot_waves, self.plot_probe_on, pen='r')
-        pcurve1 = pg.PlotDataItem(self.plot_waves, self.plot_probe_on-4*probe_std, pen=None)
-        pcurve2 = pg.PlotDataItem(self.plot_waves, self.plot_probe_on+4*probe_std, pen=None)
-        self.probe_error_region.setCurves(pcurve1, pcurve2)            
+        pcurve1 = pg.PlotDataItem(self.plot_waves, self.plot_probe_on-2*probe_std, pen='r')
+        pcurve2 = pg.PlotDataItem(self.plot_waves, self.plot_probe_on+2*probe_std, pen='r')
+        self.probe_error_region.setCurves(pcurve1, pcurve2)
+        self.ui.d_probe_ref_graph.addItem(self.probe_error_region)            
         if self.ui.d_use_reference.isChecked() is True:
-            ref_std = np.std(self.plot_ref_on_array, axis=0)
-            self.ui.d_probe_ref_graph.plotItem.plot(self.plot_waves, self.plot_ref_on, pen='b')
-            rcurve1 = pg.PlotDataItem(self.plot_waves, self.plot_ref_on-4*ref_std, pen=None)
-            rcurve2 = pg.PlotDataItem(self.plot_waves, self.plot_ref_on+4*ref_std, pen=None)
+            ref_std = np.std(self.plot_reference_on_array, axis=0)
+            self.ui.d_probe_ref_graph.plotItem.plot(self.plot_waves, self.plot_reference_on, pen='b')
+            rcurve1 = pg.PlotDataItem(self.plot_waves, self.plot_reference_on-2*ref_std, pen='b')
+            rcurve2 = pg.PlotDataItem(self.plot_waves, self.plot_reference_on+2*ref_std, pen='b')
             self.ref_error_region.setCurves(rcurve1, rcurve2)
-        else:
-            self.ref_error_region.setCurves(None, None)
+            self.ui.d_probe_ref_graph.addItem(self.ref_error_region)
         return
         
     def d_ls_plot(self):
@@ -940,42 +953,43 @@ class Application(QtGui.QMainWindow):
     def running(self):
         self.idle = False
         self.ui.hardware_tab.setEnabled(False)
-        self.ui.run_btn.setDisabled(True)
+        self.ui.a_run_btn.setDisabled(True)
         self.ui.d_run_btn.setDisabled(True)
-        self.ui.file_box.setDisabled(True)
-        self.ui.timefile_box.setDisabled(True)
-        self.ui.acquire_options_box.setDisabled(True)
-        self.ui.calib_box.setDisabled(True)
-        self.ui.d_set_linear_corr_btn.setDisabled(True)
+        self.ui.a_file_box.setDisabled(True)
+        self.ui.a_times_box.setDisabled(True)
+        self.ui.a_acquire_box.setDisabled(True)
+        self.ui.a_calib_box.setDisabled(True)
+        self.ui.a_cutoff_box.setDisabled(True)
         if self.diagnostics_on is False:
-            self.ui.d_time_box.setDisabled(True)
+            self.ui.d_times_box.setDisabled(True)
             self.ui.d_other_box.setDisabled(True)
             self.ui.d_calib_box.setDisabled(True)
+            self.ui.d_cutoff_box.setDisabled(True)
             self.ui.d_refmanip_box.setDisabled(True)
-            self.ui.d_acquire_options_box.setDisabled(True)
+            self.ui.d_acquire_box.setDisabled(True)
         return
             
     def idling(self):
         self.idle = True
         self.ui.hardware_tab.setEnabled(True)
-        self.ui.run_btn.setDisabled(False)
+        self.ui.a_run_btn.setDisabled(False)
         self.ui.d_run_btn.setDisabled(False)
-        self.ui.file_box.setDisabled(False)
-        self.ui.file_box.setDisabled(False)
-        self.ui.timefile_box.setDisabled(False)
-        self.ui.acquire_options_box.setDisabled(False)
-        self.ui.calib_box.setDisabled(False)
+        self.ui.a_file_box.setDisabled(False)
+        self.ui.a_times_box.setDisabled(False)
+        self.ui.a_acquire_box.setDisabled(False)
+        self.ui.a_calib_box.setDisabled(False)
+        self.ui.a_cutoff_box.setDisabled(False)
         self.ui.d_refmanip_box.setDisabled(False)
-        self.ui.d_acquire_options_box.setDisabled(False)
+        self.ui.d_acquire_box.setDisabled(False)
         self.ui.d_other_box.setDisabled(False)
         self.ui.d_calib_box.setDisabled(False)
-        self.ui.d_time_box.setDisabled(False)
-        self.ui.d_set_linear_corr_btn.setDisabled(False)
+        self.ui.d_cutoff_box.setDisabled(False)
+        self.ui.d_times_box.setDisabled(False)
         return
     
     def update_progress_bars(self):
         self.ui.a_sweep_progress_bar.setValue(self.timestep+1)
-        self.ui.a_measurement_progress_bar.setValue((len(self.times)*self.sweep_index)+self.timestep+1)
+        self.ui.a_measurement_progress_bar.setValue((len(self.times)*self.current_sweep.sweep_index)+self.timestep+1)
         return
         
     def acquire(self):
@@ -1000,7 +1014,7 @@ class Application(QtGui.QMainWindow):
             except:
                 self.append_history('Error using linear pixel correction')
         self.high_trig_std = self.current_data.separate_on_off(self.threshold,self.tau_flip_request)
-        if self.ui.test_run_btn.isChecked() is False:
+        if self.ui.a_test_run_btn.isChecked() is False:
             self.current_data.sub_bgd(self.bgd)
         if self.ui.d_use_ref_manip.isChecked() is True:
             self.current_data.manipulate_reference(self.refman)
@@ -1018,12 +1032,12 @@ class Application(QtGui.QMainWindow):
         else:
             self.append_history('Did not add last point')
         self.create_plot_waves_and_times()
-        if self.ui.acquire_tab.isVisible() is True:
+        if self.ui.acquisition_tab.isVisible() is True:
             self.ls_plot()
             self.top_plot()
             self.kin_plot()
             self.spec_plot()
-        if self.ui.diagnos_tab.isVisible() is True:
+        if self.ui.diagnostics_tab.isVisible() is True:
             self.d_ls_plot()
             self.d_error_plot()
             self.d_trigger_plot()
@@ -1036,7 +1050,7 @@ class Application(QtGui.QMainWindow):
         else:
             self.timestep = self.timestep+1
             self.time = self.times[self.timestep]
-            self.ui.time_display.display(self.time)
+            self.ui.a_time_display.display(self.time)
             self.update_progress_bars()
             self.move(self.time)
             self.acquire()
@@ -1064,7 +1078,7 @@ class Application(QtGui.QMainWindow):
         return    
     
     def exec_run_btn(self):
-        if self.ui.test_run_btn.isChecked() is True:
+        if self.ui.a_test_run_btn.isChecked() is True:
             self.append_history('Launching Test Run!')
         else:
             self.append_history('Launching Run!')
@@ -1102,7 +1116,7 @@ class Application(QtGui.QMainWindow):
         self.acquisition.start_acquire.connect(self.acquisition.acquire)
         self.acquisition.data_ready.connect(self.post_acquire_bgd)
         
-        if self.ui.test_run_btn.isChecked() is False:
+        if self.ui.a_test_run_btn.isChecked() is False:
             self.message_block()
             self.append_history('Taking Background')
             self.acquire_bgd()
@@ -1119,9 +1133,9 @@ class Application(QtGui.QMainWindow):
         self.acquisition.data_ready.connect(self.post_acquire)
         
         self.append_history('Starting Sweep '+str(self.current_sweep.sweep_index))
-        self.ui.sweep_display.display(self.current_sweep.sweep_index+1)
+        self.ui.a_sweep_display.display(self.current_sweep.sweep_index+1)
         self.ui.a_sweep_progress_bar.setMaximum(len(self.times))
-        self.ui.a_measurment_progress_bar.setMaximum(len(self.times)*self.num_sweeps)
+        self.ui.a_measurement_progress_bar.setMaximum(len(self.times)*self.num_sweeps)
         self.start_sweep()
         
     def finish(self):
@@ -1133,14 +1147,14 @@ class Application(QtGui.QMainWindow):
     def start_sweep(self):
         self.timestep = 0
         self.time = self.times[self.timestep]
-        self.ui.time_display.display(self.time)
+        self.ui.a_time_display.display(self.time)
         self.update_progress_bars()
         self.move(self.time)
         self.acquire()
         return
         
     def post_sweep(self):
-        if self.ui.test_run_btn.isChecked() is False:
+        if self.ui.a_test_run_btn.isChecked() is False:
             self.append_history('Saving Sweep '+str(self.current_sweep.sweep_index))
             try:
                 self.current_sweep.save_current_data(self.waves)
@@ -1157,7 +1171,7 @@ class Application(QtGui.QMainWindow):
             self.finish()
         else:
             self.append_history('Starting Sweep '+str(self.current_sweep.sweep_index))
-            self.ui.sweep_display.display(self.current_sweep.sweep_index+1)
+            self.ui.a_sweep_display.display(self.current_sweep.sweep_index+1)
             self.start_sweep()
         return
         
@@ -1190,7 +1204,7 @@ class Application(QtGui.QMainWindow):
             self.ui.d_longstage_t0.setValue(self.longstage_t0-self.d_time)
         else:  # pink laser
             self.ui.d_pinklaser_t0.setValue(self.pinklaser_t0-self.d_time)
-        self.d_time.setValue(0)
+        self.ui.d_time.setValue(0)
         self.update_d_time()
         self.move(self.d_time)
         return
@@ -1217,7 +1231,7 @@ class Application(QtGui.QMainWindow):
             except:
                 self.append_history('Error using linear pixel correction')
         self.current_data.separate_on_off(self.threshold,self.tau_flip_request)
-        if self.ui.test_run_btn.isChecked() is False:
+        if self.ui.a_test_run_btn.isChecked() is False:
             self.current_data.sub_bgd(self.bgd)
         if self.ui.d_use_ref_manip.isChecked() is True:
             self.current_data.manipulate_reference(self.refman)
@@ -1270,7 +1284,7 @@ class Application(QtGui.QMainWindow):
         self.diagnostics_on = True
         self.tau_flip_request = False
         self.running()
-        self.ui.test_run_btn.setChecked(0)
+        self.ui.a_test_run_btn.setChecked(0)
         self.update_d_num_shots()
         
         success = self.delay.check_time(self.d_time)
