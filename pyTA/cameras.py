@@ -6,7 +6,7 @@ from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 class Acquisition(QObject):
     
-    def __init__(self, camera, number_of_scans=100, exposure_time_us=10):
+    def __init__(self, camera, number_of_scans=100, exposure_time_us=1):
         super(QObject, self).__init__()
         self.camera = camera
         self.camera.number_of_scans = number_of_scans

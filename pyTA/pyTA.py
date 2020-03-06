@@ -621,6 +621,10 @@ class Application(QtGui.QMainWindow):
         self.update_xlabel()
         return
     
+    def update_d_dcshotfactor(self):
+        self.dcshotfactor = self.ui.d_dcshotfactor_sb.value()
+        return
+    
     def update_xlabel(self):
         self.xlabel = 'Wavelength (nm)' if self.use_calib else 'Pixel Number'
         self.ui.a_last_shot_graph.plotItem.setLabels(bottom=self.xlabel)
@@ -1061,7 +1065,7 @@ class Application(QtGui.QMainWindow):
         return
    
     def acquire_bgd(self):
-        self.append_history('Acquiring '+str(self.num_shots*10)+' shots')
+        self.append_history('Acquiring '+str(self.num_shots*self.dcshotfactor)+' shots')
         self.acquisition.start_acquire.emit()
         return
     
@@ -1115,7 +1119,7 @@ class Application(QtGui.QMainWindow):
         self.acquire_thread = QtCore.QThread()
         self.acquire_thread.start()
         
-        self.acquisition = Acquisition(self.camera, number_of_scans=self.num_shots*10)
+        self.acquisition = Acquisition(self.camera, number_of_scans=self.num_shots*self.dcshotfactor)
         
         self.acquisition.moveToThread(self.acquire_thread)
         self.acquisition.start_acquire.connect(self.acquisition.acquire)
@@ -1264,7 +1268,7 @@ class Application(QtGui.QMainWindow):
         return
         
     def d_acquire_bgd(self):
-        self.append_history('Acquiring '+str(self.num_shots*10)+' shots')
+        self.append_history('Acquiring '+str(self.num_shots*self.dcshotfactor)+' shots')
         self.acquisition.start_acquire.emit()
         return
         
@@ -1303,7 +1307,7 @@ class Application(QtGui.QMainWindow):
         self.acquire_thread = QtCore.QThread()
         self.acquire_thread.start()
         
-        self.acquisition = Acquisition(self.camera, number_of_scans=self.num_shots*10)
+        self.acquisition = Acquisition(self.camera, number_of_scans=self.num_shots*self.dcshotfactor)
 
         self.acquisition.moveToThread(self.acquire_thread)
         self.acquisition.start_acquire.connect(self.acquisition.acquire)

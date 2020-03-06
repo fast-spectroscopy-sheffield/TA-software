@@ -493,6 +493,14 @@ class Ui_pyTAgui(object):
         self.label_38 = QtWidgets.QLabel(self.d_acquire_box)
         self.label_38.setGeometry(QtCore.QRect(90, 70, 141, 16))
         self.label_38.setObjectName("label_38")
+        self.d_dcshotfactor_sb = QtWidgets.QSpinBox(self.d_acquire_box)
+        self.d_dcshotfactor_sb.setGeometry(QtCore.QRect(280, 80, 51, 22))
+        self.d_dcshotfactor_sb.setMinimum(1)
+        self.d_dcshotfactor_sb.setMaximum(10)
+        self.d_dcshotfactor_sb.setObjectName("d_dcshotfactor_sb")
+        self.label_22 = QtWidgets.QLabel(self.d_acquire_box)
+        self.label_22.setGeometry(QtCore.QRect(220, 60, 111, 21))
+        self.label_22.setObjectName("label_22")
         self.d_launch_box = QtWidgets.QGroupBox(self.diagnostics_tab)
         self.d_launch_box.setGeometry(QtCore.QRect(10, 730, 341, 71))
         self.d_launch_box.setObjectName("d_launch_box")
@@ -639,7 +647,7 @@ class Ui_pyTAgui(object):
         pyTAgui.setStatusBar(self.statusBar)
 
         self.retranslateUi(pyTAgui)
-        self.tabs.setCurrentIndex(1)
+        self.tabs.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(pyTAgui)
 
     def retranslateUi(self, pyTAgui):
@@ -725,6 +733,7 @@ class Ui_pyTAgui(object):
         self.label_41.setText(_translate("pyTAgui", "Spectrum Type"))
         self.d_use_ir_gain.setText(_translate("pyTAgui", "IR Gain"))
         self.label_38.setText(_translate("pyTAgui", "Pink Laser Time Zero"))
+        self.label_22.setText(_translate("pyTAgui", "dark correction shots x"))
         self.d_launch_box.setTitle(_translate("pyTAgui", "Launch"))
         self.d_run_btn.setText(_translate("pyTAgui", "Run"))
         self.d_stop_btn.setText(_translate("pyTAgui", "Stop"))

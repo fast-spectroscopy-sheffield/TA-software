@@ -1802,6 +1802,35 @@ color: rgb(0, 255, 255);</string>
         <string>Pink Laser Time Zero</string>
        </property>
       </widget>
+      <widget class="QSpinBox" name="d_dcshotfactor_sb">
+       <property name="geometry">
+        <rect>
+         <x>280</x>
+         <y>80</y>
+         <width>51</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>10</number>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_22">
+       <property name="geometry">
+        <rect>
+         <x>220</x>
+         <y>60</y>
+         <width>111</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>dark correction shots x</string>
+       </property>
+      </widget>
      </widget>
      <widget class="QGroupBox" name="d_launch_box">
       <property name="geometry">
