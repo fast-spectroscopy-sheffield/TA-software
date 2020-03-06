@@ -2,6 +2,7 @@
 import sys
 import os
 from PyQt5 import QtGui, QtCore
+from PyQt5.QtCore import pyqtSlot
 
 # gui
 from gui import Ui_pyTAgui as pyTAgui
@@ -774,8 +775,10 @@ class Application(QtGui.QMainWindow):
                 plot_times = np.log10(self.plot_times)
                 self.plot_kinetic_avg = self.current_sweep.avg_data[np.isfinite(plot_times), self.kinetics_pixel]
                 self.plot_times = self.plot_times[np.isfinite(plot_times)]
+                self.ui.a_kinetic_graph.setLogMode(x=True, y=False)
             else:
                 self.plot_kinetic_avg = self.current_sweep.avg_data[:, self.kinetics_pixel]
+                self.ui.a_kinetic_graph.setLogMode(x=False, y=False)
         
         if self.diagnostics_on is False:
             self.plot_dtt = self.current_sweep.avg_data[:]
@@ -996,7 +999,8 @@ class Application(QtGui.QMainWindow):
         self.append_history('Acquiring '+str(self.num_shots)+' shots')
         self.acquisition.start_acquire.emit()  # connects to the Acquire signal in the camera class, which results in a signal data_ready being emitted containing the data from probe and reference. This signal connects to post_acquire method, which loops back to acquire
         return
-        
+    
+    @pyqtSlot(np.ndarray, np.ndarray, int, int)    
     def post_acquire(self, probe, reference, first_pixel, num_pixels):
         try:
             self.current_data.update(probe,
@@ -1060,7 +1064,8 @@ class Application(QtGui.QMainWindow):
         self.append_history('Acquiring '+str(self.num_shots*10)+' shots')
         self.acquisition.start_acquire.emit()
         return
-        
+    
+    @pyqtSlot(np.ndarray, np.ndarray, int, int)    
     def post_acquire_bgd(self, probe, reference, first_pixel, num_pixels):      
         self.message_unblock()
         self.bgd = DataProcessing(probe,
@@ -1214,6 +1219,7 @@ class Application(QtGui.QMainWindow):
         self.acquisition.start_acquire.emit()
         return
         
+    @pyqtSlot(np.ndarray, np.ndarray, int, int)
     def d_post_acquire(self, probe, reference, first_pixel, num_pixels):
         try:
             self.current_data.update(probe,
@@ -1262,6 +1268,7 @@ class Application(QtGui.QMainWindow):
         self.acquisition.start_acquire.emit()
         return
         
+    @pyqtSlot(np.ndarray, np.ndarray, int, int)
     def d_post_acquire_bgd(self, probe, reference, first_pixel, num_pixels):      
         self.message_unblock()
         self.bgd = DataProcessing(probe,

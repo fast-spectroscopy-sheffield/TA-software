@@ -150,8 +150,6 @@ class StresingCameras(QObject):
         self.probe = hiloArray[:, 0, :]  # pointers onto self.data
         self.reference = hiloArray[:, 1, :]
     
-    _exit = pyqtSignal()
-    @pyqtSlot()
     def close(self):
         self.CCDDrvExit()
         
