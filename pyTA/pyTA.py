@@ -97,7 +97,10 @@ class Application(QtGui.QMainWindow):
         self.ui.a_filename_le.setText('newfile')
         self.ui.a_use_calib.toggle()
         self.ui.a_use_cutoff.toggle()
-        self.ui.a_plot_log_t_cb.toggle()
+        #self.ui.a_plot_log_t_cb.toggle()
+        self.ui.a_plot_log_t_cb.setChecked(False)
+        self.ui.a_plot_log_t_cb.setEnabled(False)
+        self.use_logscale = False
         self.ui.d_use_linear_corr.setChecked(False)
         self.ui.d_use_reference.setChecked(True)
         # file
@@ -229,6 +232,7 @@ class Application(QtGui.QMainWindow):
         self.ui.d_longstage_t0.valueChanged.connect(self.update_d_longstage_t0)
         self.ui.d_pinklaser_t0.valueChanged.connect(self.update_d_pinklaser_t0)
         self.ui.d_num_shots.valueChanged.connect(self.update_d_num_shots)
+        self.ui.d_dcshotfactor_sb.valueChanged.connect(self.update_d_dcshotfactor)
         # diagnostics time
         self.ui.d_time.valueChanged.connect(self.update_d_time)
         self.ui.d_move_to_time_btn.clicked.connect(self.exec_d_move_to_time)
@@ -274,6 +278,7 @@ class Application(QtGui.QMainWindow):
         self.update_times()
         self.update_xlabel()
         self.update_filepath()
+        self.update_d_dcshotfactor()
         
     def save_gui_values(self):
         self.last_instance_values['use cutoff'] = 1 if self.ui.a_use_cutoff.isChecked() else 0
@@ -491,10 +496,10 @@ class Application(QtGui.QMainWindow):
         distribution = self.ui.a_distribution_dd.currentText()
         if distribution == 'Linear':
             self.ui.a_num_tpoints_sb.setMinimum(5)
-            self.ui.a_plot_log_t_cb.setChecked(False)
+            #self.ui.a_plot_log_t_cb.setChecked(False)
         else:
             self.ui.a_num_tpoints_sb.setMinimum(25)
-            self.ui.a_plot_log_t_cb.setChecked(True)
+            #self.ui.a_plot_log_t_cb.setChecked(True)
         start_time = self.ui.a_tstart_sb.value()
         end_time = self.ui.a_tend_sb.value()
         num_points = self.ui.a_num_tpoints_sb.value()
@@ -773,16 +778,10 @@ class Application(QtGui.QMainWindow):
         
     def create_plot_waves_and_times(self):
         self.set_waves_and_times_axes()
-        # sort out logscale for kinetics plot
+
         if not self.diagnostics_on:
-            if self.use_logscale is True:
-                plot_times = np.log10(self.plot_times)
-                self.plot_kinetic_avg = self.current_sweep.avg_data[np.isfinite(plot_times), self.kinetics_pixel]
-                self.plot_times = self.plot_times[np.isfinite(plot_times)]
-                self.ui.a_kinetic_graph.setLogMode(x=True, y=False)
-            else:
-                self.plot_kinetic_avg = self.current_sweep.avg_data[:, self.kinetics_pixel]
-                self.ui.a_kinetic_graph.setLogMode(x=False, y=False)
+            self.plot_kinetic_avg = self.current_sweep.avg_data[:, self.kinetics_pixel]
+            self.plot_kinetic_current = self.current_sweep.current_data[:, self.kinetics_pixel]
         
         if self.diagnostics_on is False:
             self.plot_dtt = self.current_sweep.avg_data[:]
@@ -867,16 +866,20 @@ class Application(QtGui.QMainWindow):
     def kin_plot(self):
         for item in self.ui.a_kinetic_graph.plotItem.listDataItems():
             self.ui.a_kinetic_graph.plotItem.removeItem(item)
-        if self.current_sweep.sweep_index == 0:
-            self.ui.a_kinetic_graph.plotItem.plot(self.plot_times[0:self.timestep+1], self.plot_kinetic_avg[0:self.timestep+1], pen='b', symbol='s', symbolPen='b', symbolBrush=None, symbolSize=4, clear=False)
-        else:
+        if self.finished_acquisition:
             self.ui.a_kinetic_graph.plotItem.plot(self.plot_times, self.plot_kinetic_avg, pen='b', symbol='s', symbolPen='b', symbolBrush=None, symbolSize=4, clear=False)
+        else:
+            if self.current_sweep.sweep_index > 0:
+                self.ui.a_kinetic_graph.plotItem.plot(self.plot_times[0:self.timestep+1], self.plot_kinetic_current[0:self.timestep+1], pen='c', symbol='s', symbolPen='c', symbolBrush=None, symbolSize=4, clear=False)
+                self.ui.a_kinetic_graph.plotItem.plot(self.plot_times, self.plot_kinetic_avg, pen='b', symbol='s', symbolPen='b', symbolBrush=None, symbolSize=4, clear=False)
+            else:
+                self.ui.a_kinetic_graph.plotItem.plot(self.plot_times[0:self.timestep+1], self.plot_kinetic_current[0:self.timestep+1], pen='c', symbol='s', symbolPen='c', symbolBrush=None, symbolSize=4, clear=False)
         return
         
     def spec_plot(self):
         for item in self.ui.a_spectra_graph.plotItem.listDataItems():
             self.ui.a_spectra_graph.plotItem.removeItem(item)
-        self.ui.a_spectra_graph.plotItem.plot(self.plot_waves, self.plot_dtt[self.time_pixel,:], pen='g', clear=False)
+        self.ui.a_spectra_graph.plotItem.plot(self.plot_waves, self.plot_dtt[self.time_pixel,:], pen='r', clear=False)
         return
         
     def d_error_plot(self):
