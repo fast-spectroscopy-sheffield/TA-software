@@ -1024,7 +1024,7 @@ class Application(QtGui.QMainWindow):
                 self.current_data.linear_pixel_correlation(self.linear_corr)
             except:
                 self.append_history('Error using linear pixel correction')
-        self.high_trig_std = self.current_data.separate_on_off(self.threshold,self.tau_flip_request)
+        self.high_trig_std = self.current_data.separate_on_off(self.threshold, self.tau_flip_request)
         if self.ui.a_test_run_btn.isChecked() is False:
             self.current_data.sub_bgd(self.bgd)
         if self.ui.d_use_ref_manip.isChecked() is True:
@@ -1033,37 +1033,39 @@ class Application(QtGui.QMainWindow):
         if self.ui.d_use_reference.isChecked() is True:
             self.current_data.correct_probe_with_reference()
             self.current_data.average_refd_shots()
-            self.high_dtt = self.current_data.calcuate_dtt(use_reference=True,cutoff=self.cutoff,use_avg_off_shots=self.ui.d_use_avg_off_shots.isChecked(),max_dtt=np.abs(self.ui.d_max_dtt.value()))
-            self.current_data.calculate_dtt_error(use_reference=True,use_avg_off_shots=self.ui.d_use_avg_off_shots.isChecked())
+            self.high_dtt = self.current_data.calcuate_dtt(use_reference=True, cutoff=self.cutoff, use_avg_off_shots=self.ui.d_use_avg_off_shots.isChecked(), max_dtt=np.abs(self.ui.d_max_dtt.value()))
+            self.current_data.calculate_dtt_error(use_reference=True ,use_avg_off_shots=self.ui.d_use_avg_off_shots.isChecked())
         else:
-            self.high_dtt = self.current_data.calcuate_dtt(use_reference=False,cutoff=self.cutoff,use_avg_off_shots=self.ui.d_use_avg_off_shots.isChecked(),max_dtt=np.abs(self.ui.d_max_dtt.value()))
-            self.current_data.calculate_dtt_error(use_reference=False,use_avg_off_shots=self.ui.d_use_avg_off_shots.isChecked())
+            self.high_dtt = self.current_data.calcuate_dtt(use_reference=False,cutoff=self.cutoff, use_avg_off_shots=self.ui.d_use_avg_off_shots.isChecked(), max_dtt=np.abs(self.ui.d_max_dtt.value()))
+            self.current_data.calculate_dtt_error(use_reference=False, use_avg_off_shots=self.ui.d_use_avg_off_shots.isChecked())
         if (self.high_trig_std is False) and (self.high_dtt is False):
-            self.current_sweep.add_current_data(self.current_data.dtt,time_point=self.timestep)
+            self.current_sweep.add_current_data(self.current_data.dtt, time_point=self.timestep)
+            self.create_plot_waves_and_times()
+            if self.ui.acquisition_tab.isVisible() is True:
+                self.ls_plot()
+                self.top_plot()
+                self.kin_plot()
+                self.spec_plot()
+            if self.ui.diagnostics_tab.isVisible() is True:
+                self.d_ls_plot()
+                self.d_error_plot()
+                self.d_trigger_plot()
+                self.d_probe_ref_plot()
+            if self.stop_request is True:
+                self.finish()
+            if self.timestep == len(self.times)-1:
+                self.post_sweep()
+            else:
+                self.timestep = self.timestep+1
+                self.time = self.times[self.timestep]
+                self.ui.a_time_display.display(self.time)
+                self.update_progress_bars()
+                self.move(self.time)
+                self.acquire()
         else:
-            self.append_history('Did not add last point')
-        self.create_plot_waves_and_times()
-        if self.ui.acquisition_tab.isVisible() is True:
-            self.ls_plot()
-            self.top_plot()
-            self.kin_plot()
-            self.spec_plot()
-        if self.ui.diagnostics_tab.isVisible() is True:
-            self.d_ls_plot()
-            self.d_error_plot()
-            self.d_trigger_plot()
-            self.d_probe_ref_plot()
-        
-        if self.stop_request is True:
-            self.finish()
-        elif self.timestep == len(self.times)-1:
-            self.post_sweep()
-        else:
-            self.timestep = self.timestep+1
-            self.time = self.times[self.timestep]
-            self.ui.a_time_display.display(self.time)
-            self.update_progress_bars()
-            self.move(self.time)
+            if self.stop_request is True:
+                self.finish()
+            self.append_history('retaking point')
             self.acquire()
         return
    

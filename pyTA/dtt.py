@@ -127,7 +127,7 @@ class DataProcessing:
                 self.dtt_array = (self.probe_on_array-self.probe_off_array)/self.probe_off_array
         self.dtt = self.dtt_array.mean(axis=0)
         fin_dtt = self.dtt[np.isfinite(self.dtt)]
-        if np.abs(fin_dtt[cutoff[0]:cutoff[1]]).max() > max_dtt:
+        if fin_dtt.size == 0 or np.abs(fin_dtt[cutoff[0]:cutoff[1]]).max() > max_dtt:
             high_dtt = True
             print('High dtt! '+str(datetime.datetime.now()))
         return high_dtt
