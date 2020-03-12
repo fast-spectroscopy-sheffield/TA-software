@@ -1,21 +1,25 @@
 # TA-software
 Software for the transient absorption setup.
 
-Code adapted with permission from that written by various members of the OE group at Cambridge.
-Original code can be found at https://gitlab.com/Fastlab/PyTA.
+### pyTA ###
+Measurement setup and data acquisition.
 
-### visTA
-For use with the double-line VIS cameras detecting wavelengths in the visible.
+_Thanks to the OE group at Cambridge for some of the original code._
 
-#### Version Information
-Current version: 1.0.2  
-David Bossanyi (25-04-2019)  
-<dgbossanyi1@sheffield.ac.uk>
+### hdf5-converter ###
+Conversion of data files (.hdf5) to useful things.
 
-### irTA
-Yet to be tested with the cameras.
-
-#### Version Information
-Current version: 1.0.0  
-David Bossanyi (25-04-2019)   
-<dgbossanyi1@sheffield.ac.uk>
+### usage ###
+Open an anaconda command prompt and `cd` to the TA-software folder. Then activate the environment and launch the software by running:
+```bat
+conda activate pyTA
+cd pyTA
+python pyTA.py
+```
+Then to use the hdf5 conversion tool, run:
+```bat
+cd ..
+cd hdf5-converter
+python hdf5-converter.py
+```
+When finished run `conda deactivate`.
