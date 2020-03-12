@@ -1156,6 +1156,18 @@ class Application(QtGui.QMainWindow):
         self.acquire_thread.quit()
         self.idling()
         self.finished_acquisition = True
+        if not self.stop_request:
+            self.create_plot_waves_and_times()
+            if self.ui.acquisition_tab.isVisible() is True:
+                self.ls_plot()
+                self.top_plot()
+                self.kin_plot()
+                self.spec_plot()
+            if self.ui.diagnostics_tab.isVisible() is True:
+                self.d_ls_plot()
+                self.d_error_plot()
+                self.d_trigger_plot()
+                self.d_probe_ref_plot()
         return
         
     def start_sweep(self):
