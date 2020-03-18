@@ -23,3 +23,8 @@ cd hdf5-converter
 python hdf5-converter.py
 ```
 When finished run `conda deactivate`.
+
+### known issues ###
+
+ - wavelength marker for updating the kinetic plot does not take pixel-wavelength calibration into account
+ - log scaling of kinetic plot should be implemented
