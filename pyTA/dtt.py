@@ -50,7 +50,7 @@ class DataProcessing:
         self.trigger = np.array(self.trigger)
         if np.abs(self.trigger-self.trigger.mean()).std() > 20:
             print('high std '+str(datetime.datetime.now()))
-            high_std = True
+            #high_std = True
         if tau_flip_request is True:
             self.trigger = np.roll(self.trigger, 1)
         if (self.untrimmed_probe_array[0, pixel] >= thresh_value and not tau_flip_request) or (self.untrimmed_probe_array[0, pixel] < thresh_value and tau_flip_request):

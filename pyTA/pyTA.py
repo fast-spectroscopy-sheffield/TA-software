@@ -857,7 +857,7 @@ class Application(QtGui.QMainWindow):
     
     def update_kinetics_wavelength(self):
         self.kinetics_wavelength = self.wavelength_marker.value()
-        self.kinetics_pixel = np.where((self.plot_waves-self.kinetics_wavelength)**2 == min((self.plot_waves-self.kinetics_wavelength)**2))[0][0]
+        self.kinetics_pixel = np.where((self.waves-self.kinetics_wavelength)**2 == min((self.waves-self.kinetics_wavelength)**2))[0][0]  # self.waves rather than self.plot_waves?
         if self.finished_acquisition:
             self.create_plot_waves_and_times()
             self.kin_plot()
