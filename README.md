@@ -27,7 +27,6 @@ When finished run `conda deactivate`.
 ### important things to fix ###
 
  - Fix the quality control algorithm in `dtt.py` so that bad data is properly rejected but we don't get stuck in a loop of retaking the data point. Not sure yet what the solution is.
- - Calibration values for the high pixel are not saved properly. Always defaults to pixel 1, wavelength 401 which are the arbitrary values set in Qt Designer.
  
 ### nice things to have ###
  - log scaling of kinetic plot should be implemented at some point
