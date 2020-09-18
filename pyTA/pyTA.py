@@ -429,16 +429,22 @@ class Application(QtGui.QMainWindow):
             self.ui.d_longstage_t0.setEnabled(False)
             self.ui.a_pinklaser_t0.setEnabled(False)
             self.ui.d_pinklaser_t0.setEnabled(False)
+            self.ui.a_shortstage_t0.setEnabled(True)
+            self.ui.d_shortstage_t0.setEnabled(True)
         elif self.delay_type == 1:  # long stage
             self.ui.a_shortstage_t0.setEnabled(False)
             self.ui.d_shortstage_t0.setEnabled(False)
             self.ui.a_pinklaser_t0.setEnabled(False)
             self.ui.d_pinklaser_t0.setEnabled(False)
+            self.ui.a_longstage_t0.setEnabled(True)
+            self.ui.d_longstage_t0.setEnabled(True)
         else:  # pink laser
             self.ui.a_longstage_t0.setEnabled(False)
             self.ui.d_longstage_t0.setEnabled(False)
             self.ui.a_shortstage_t0.setEnabled(False)
             self.ui.d_shortstage_t0.setEnabled(False)
+            self.ui.a_pinklaser_t0.setEnabled(True)
+            self.ui.d_pinklaser_t0.setEnabled(True)
             self.timeunits = 'ns'
         return
             

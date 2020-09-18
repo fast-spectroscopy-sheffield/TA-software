@@ -36,7 +36,7 @@ class PILongStageDelay:
         return    
         
     def move_to(self, time_point_ps):
-        new_pos_mm = self.convert_ps_to_mm(float(time_point_ps-self.t0))
+        new_pos_mm = self.convert_ps_to_mm(float(self.t0-time_point_ps))
         self.stage.MOV(self.axis, new_pos_mm)
         self.wait(self.timeout)
         return False
@@ -51,14 +51,14 @@ class PILongStageDelay:
     def check_times(self, times):
         all_on_stage = True
         for time in times:
-            pos = self.convert_ps_to_mm(float(time-self.t0))
+            pos = self.convert_ps_to_mm(float(self.t0-time))
             if (pos>self.stage.qTMX()[self.axis]) or (pos<self.stage.qTMN()[self.axis]):
                 all_on_stage = False
         return all_on_stage
         
     def check_time(self, time):
         on_stage = True
-        pos = self.convert_ps_to_mm(float(time-self.t0))
+        pos = self.convert_ps_to_mm(float(self.t0-time))
         if (pos>self.stage.qTMX()[self.axis]) or (pos<self.stage.qTMN()[self.axis]):
             on_stage = False
         return on_stage
