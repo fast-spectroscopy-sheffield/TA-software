@@ -431,6 +431,8 @@ class Application(QtGui.QMainWindow):
             self.ui.d_pinklaser_t0.setEnabled(False)
             self.ui.a_shortstage_t0.setEnabled(True)
             self.ui.d_shortstage_t0.setEnabled(True)
+            self.timeunits = 'ps'
+            self.update_xlabel_kinetics()
         elif self.delay_type == 1:  # long stage
             self.ui.a_shortstage_t0.setEnabled(False)
             self.ui.d_shortstage_t0.setEnabled(False)
@@ -438,6 +440,8 @@ class Application(QtGui.QMainWindow):
             self.ui.d_pinklaser_t0.setEnabled(False)
             self.ui.a_longstage_t0.setEnabled(True)
             self.ui.d_longstage_t0.setEnabled(True)
+            self.timeunits = 'ps'
+            self.update_xlabel_kinetics()
         else:  # pink laser
             self.ui.a_longstage_t0.setEnabled(False)
             self.ui.d_longstage_t0.setEnabled(False)
@@ -446,6 +450,7 @@ class Application(QtGui.QMainWindow):
             self.ui.a_pinklaser_t0.setEnabled(True)
             self.ui.d_pinklaser_t0.setEnabled(True)
             self.timeunits = 'ns'
+            self.update_xlabel_kinetics()
         return
             
     def update_filepath(self):
@@ -656,6 +661,11 @@ class Application(QtGui.QMainWindow):
         self.ui.d_error_graph.plotItem.setLabels(bottom=self.xlabel)
         self.ui.d_probe_ref_graph.plotItem.setLabels(bottom=self.xlabel)
         return
+    
+    def update_xlabel_kinetics(self):
+        label = 'Time ({0})'.format(self.timeunits)
+        self.ui.a_kinetic_graph.plotItem.setLabels(bottom=label)
+        return
         
     def update_calib(self):
         self.calib  = [self.ui.a_calib_pixel_low.value(),
@@ -752,7 +762,7 @@ class Application(QtGui.QMainWindow):
         self.ui.a_last_shot_graph.plotItem.setLabels(left='dtt', bottom=self.xlabel)
         self.ui.a_last_shot_graph.plotItem.showAxis('top', show=True)
         self.ui.a_last_shot_graph.plotItem.showAxis('right', show=True)
-        
+
         self.ui.a_kinetic_graph.plotItem.setLabels(left='dtt', bottom='Time ({0})'.format(self.timeunits))
         self.ui.a_kinetic_graph.plotItem.showAxis('top', show=True)
         self.ui.a_kinetic_graph.plotItem.showAxis('right', show=True)
