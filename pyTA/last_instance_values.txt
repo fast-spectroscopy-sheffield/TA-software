@@ -9,7 +9,7 @@ calib wavelength high:600.0
 short stage time zero:0.0
 long stage time zero:2359.0
 pink laser time zero:2660.03
-delay type:1.0
+delay type:0.0
 distribution:0.0
 tstart:-5.0
 tend:100000.0

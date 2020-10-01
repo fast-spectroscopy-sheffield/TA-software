@@ -18,6 +18,9 @@ class PILongStageDelay:
         self.stage.ConnectTCPIP(ipaddress='192.168.0.2', ipport=400)
         self.axis = '1'
         self.timeout = 5000
+        self.pos_max = 610.0
+        self.pos_min = 0.0
+        self.set_max_min_times()
         self.stage.VEL(self.axis, 30.0)  # set the velocity to some low value to avoid crashes!
         pitools.startup(self.stage)
         
@@ -41,9 +44,17 @@ class PILongStageDelay:
         self.wait(self.timeout)
         return False
     
-    def convert_ps_to_mm(self,time_ps):
+    def convert_ps_to_mm(self, time_ps):
         pos_mm = 0.299792458*time_ps/2
         return pos_mm
+    
+    def convert_mm_to_ps(self, pos_mm):
+        time_ps = 2*pos_mm/0.299792458
+        return time_ps
+    
+    def set_max_min_times(self):
+        self.tmax = self.convert_mm_to_ps(self.pos_min)+self.t0
+        self.tmin = -self.convert_mm_to_ps(self.pos_max)+self.t0
     
     def close(self):
         self.stage.CloseConnection()
@@ -52,14 +63,14 @@ class PILongStageDelay:
         all_on_stage = True
         for time in times:
             pos = self.convert_ps_to_mm(float(self.t0-time))
-            if (pos>self.stage.qTMX()[self.axis]) or (pos<self.stage.qTMN()[self.axis]):
+            if (pos>self.pos_max) or (pos<self.pos_min):
                 all_on_stage = False
         return all_on_stage
         
     def check_time(self, time):
         on_stage = True
         pos = self.convert_ps_to_mm(float(self.t0-time))
-        if (pos>self.stage.qTMX()[self.axis]) or (pos<self.stage.qTMN()[self.axis]):
+        if (pos>self.pos_max) or (pos<self.pos_min):
             on_stage = False
         return on_stage
        
@@ -132,6 +143,7 @@ class InnolasPinkLaserDelay:
         self.rm = visa.ResourceManager()
         self.dg = self.rm.open_resource(self.dg_tcpip_address)
         self.t0 = t0
+        self.set_max_min_times()
         
     def initialise(self):
         self.dg.write('TSRC 1\r')  # set to external trigger
@@ -159,6 +171,10 @@ class InnolasPinkLaserDelay:
             new_time = new_time + 0.001  # add 1ms (rep rate is 1kHz) (AJM changed to 0ms 11-03-2019)
         self.dg.write('DLAY 2,0,{0:.5e}\r'.format(new_time))  # delay channel AB by new_time seconds from channel T0
         return tau_flip_request
+    
+    def set_max_min_times(self):
+        self.tmax = 1E6+self.t0
+        self.tmin = -1E6+self.t0
     
     def close(self):
         self.dg.close()

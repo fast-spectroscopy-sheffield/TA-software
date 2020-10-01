@@ -269,9 +269,12 @@ class Application(QtGui.QMainWindow):
         self.ui.h_disconnect_delay_btn.clicked.connect(self.exec_h_delay_disconnect_btn)
         
     def initialise_gui(self):
-        self.pinklaser_t0 = self.ui.a_pinklaser_t0.value()
-        self.longstage_t0 = self.ui.a_longstage_t0.value()
-        self.shortstage_t0 = self.ui.a_shortstage_t0.value()
+        #self.pinklaser_t0 = self.ui.a_pinklaser_t0.value()
+        #self.longstage_t0 = self.ui.a_longstage_t0.value()
+        #self.shortstage_t0 = self.ui.a_shortstage_t0.value()
+        self.update_pinklaser_t0()
+        self.update_longstage_t0()
+        self.update_shortstage_t0()
         self.update_calib()
         self.update_cutoff()
         self.update_num_shots()
@@ -394,6 +397,7 @@ class Application(QtGui.QMainWindow):
             self.append_history('Connecting to delay generator')
             self.delay = InnolasPinkLaserDelay(self.pinklaser_t0)
         self.delay.initialise()
+        self.update_d_time_box_limits()
         self.h_update_delay_status('ready')
         self.ui.h_disconnect_delay_btn.setEnabled(True)
         self.delay_connected = True
@@ -577,12 +581,19 @@ class Application(QtGui.QMainWindow):
         zero_onwards = np.geomspace(step, end_time+step, num_points-num_before_zero)-step
         times = np.concatenate((before_zero, zero_onwards))
         return times
+    
+    def update_d_time_box_limits(self):
+        self.ui.d_time.setMaximum(self.delay.tmax)
+        self.ui.d_time.setMinimum(self.delay.tmin)
+        return
         
     def update_shortstage_t0(self):
         self.shortstage_t0 = self.ui.a_shortstage_t0.value()
         self.ui.d_shortstage_t0.setValue(self.shortstage_t0)
         if self.delay_connected:
             self.delay.t0 = self.shortstage_t0
+            self.delay.set_max_min_times()
+            self.update_d_time_box_limits()
         return
         
     def update_d_shortstage_t0(self):
@@ -590,6 +601,8 @@ class Application(QtGui.QMainWindow):
         self.ui.a_shortstage_t0.setValue(self.shortstage_t0)
         if self.delay_connected:
             self.delay.t0 = self.shortstage_t0
+            self.delay.set_max_min_times()
+            self.update_d_time_box_limits()
         return
         
     def update_longstage_t0(self):
@@ -597,6 +610,8 @@ class Application(QtGui.QMainWindow):
         self.ui.d_longstage_t0.setValue(self.longstage_t0)
         if self.delay_connected:
             self.delay.t0 = self.longstage_t0
+            self.delay.set_max_min_times()
+            self.update_d_time_box_limits()
         return
         
     def update_d_longstage_t0(self):
@@ -604,6 +619,8 @@ class Application(QtGui.QMainWindow):
         self.ui.a_longstage_t0.setValue(self.longstage_t0)
         if self.delay_connected:
             self.delay.t0 = self.longstage_t0
+            self.delay.set_max_min_times()
+            self.update_d_time_box_limits()
         return
     
     def update_pinklaser_t0(self):
@@ -611,6 +628,8 @@ class Application(QtGui.QMainWindow):
         self.ui.d_pinklaser_t0.setValue(self.pinklaser_t0)
         if self.delay_connected:
             self.delay.t0 = self.pinklaser_t0
+            self.delay.set_max_min_times()
+            self.update_d_time_box_limits()
         return
         
     def update_d_pinklaser_t0(self):
@@ -618,6 +637,8 @@ class Application(QtGui.QMainWindow):
         self.ui.a_pinklaser_t0.setValue(self.pinklaser_t0)
         if self.delay_connected:
             self.delay.t0 = self.pinklaser_t0
+            self.delay.set_max_min_times()
+            self.update_d_time_box_limits()
         return
         
     def update_num_shots(self):
