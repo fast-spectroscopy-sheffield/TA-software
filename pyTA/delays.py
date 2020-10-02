@@ -1,13 +1,5 @@
-# for delay generator
 import visa
-
-# for the long stage
 from pipython import GCSDevice, pitools
-# for the short stage
-from pipython.gcscommands import GCSCommands
-from pipython.gcsmessages import GCSMessages
-from pipython.interfaces.pisocket import PISocket
-from time import sleep
 
 
 class PILongStageDelay:
@@ -73,65 +65,69 @@ class PILongStageDelay:
         if (pos>self.pos_max) or (pos<self.pos_min):
             on_stage = False
         return on_stage
-       
-
+    
+    
 class PIShortStageDelay:
     
     def __init__(self, t0):
         self.t0 = t0
-        self.gateway = PISocket(host='192.168.0.1', port=50000)
-        self.stage = GCSCommands(GCSMessages(self.gateway))
-        self.axis = 'A'
+        self.stage = GCSDevice('E-873')
+        self.stage.ConnectUSB(serialnum=119040925)
+        self.axis = '1'
         self.timeout = 5000
-        self.stage.VEL(self.axis, 10.0)  # set the velocity to a low value to avoid crashes!
+        self.pos_max = 13.0
+        self.pos_min = -13.0
+        self.set_max_min_times()
+        self.stage.VEL(self.axis, 3.0)  # set the velocity to some low value to avoid crashes!
         pitools.startup(self.stage)
         
     def initialise(self):
-        self.stage.REF(self.axis)
+        self.stage.FRF(self.axis)  # reference the axis
         self.wait(self.timeout)
         self.initialized = True
-        return
     
     def wait(self, timeout):
-        controller_error = True
-        while controller_error:
-            try:
-                pitools.waitontarget(self.stage, self.axis, timeout=timeout)
-                controller_error = False
-            except:
-                sleep(0.1)
+        pitools.waitontarget(self.stage, self.axis, timeout=timeout)
         return
 
     def home(self):
         self.stage.GOH(self.axis)
         self.wait(self.timeout)
-        return
+        return    
         
     def move_to(self, time_point_ps):
-        new_pos_mm = self.convert_ps_to_mm(float(time_point_ps-self.t0))
+        new_pos_mm = self.convert_ps_to_mm(float(self.t0-time_point_ps))
         self.stage.MOV(self.axis, new_pos_mm)
         self.wait(self.timeout)
         return False
-        
-    def convert_ps_to_mm(self,time_ps):
-        pos_mm = 0.299792458*time_ps/2
+    
+    def convert_ps_to_mm(self, time_ps):
+        pos_mm = (0.299792458*time_ps/2)-13.0
         return pos_mm
-
+    
+    def convert_mm_to_ps(self, pos_mm):
+        time_ps = 2*(pos_mm+13.0)/0.299792458
+        return time_ps
+    
+    def set_max_min_times(self):
+        self.tmax = self.convert_mm_to_ps(self.pos_min)+self.t0
+        self.tmin = -self.convert_mm_to_ps(self.pos_max)+self.t0
+    
     def close(self):
-        self.gateway.close()
+        self.stage.CloseConnection()
         
     def check_times(self, times):
         all_on_stage = True
         for time in times:
-            pos = self.convert_ps_to_mm(float(time-self.t0))
-            if (pos>self.stage.qTMX()[self.axis]) or (pos<self.stage.qTMN()[self.axis]):
+            pos = self.convert_ps_to_mm(float(self.t0-time))
+            if (pos>self.pos_max) or (pos<self.pos_min):
                 all_on_stage = False
         return all_on_stage
         
     def check_time(self, time):
         on_stage = True
-        pos = self.convert_ps_to_mm(float(time-self.t0))
-        if (pos>self.stage.qTMX()[self.axis]) or (pos<self.stage.qTMN()[self.axis]):
+        pos = self.convert_ps_to_mm(float(self.t0-time))
+        if (pos>self.pos_max) or (pos<self.pos_min):
             on_stage = False
         return on_stage
     
