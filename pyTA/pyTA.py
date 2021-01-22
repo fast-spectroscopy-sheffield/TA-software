@@ -1132,7 +1132,7 @@ class Application(QtGui.QMainWindow):
                                   num_pixels)
         if self.ui.d_use_linear_corr.isChecked():
             try:
-                self.bgd_data.linear_pixel_correlation(self.linear_corr)
+                self.bgd.linear_pixel_correlation(self.linear_corr)
             except:
                 self.append_history('Error using linear pixel correction')
         self.bgd.separate_on_off(self.threshold)
