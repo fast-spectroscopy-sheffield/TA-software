@@ -348,10 +348,10 @@ class StresingCameras(QObject):
         return us
     
     def Von(self):
-        self.dll.DLLVon(ct.c_uint32(self.board_number))
+        self.dll.DLLVOn(ct.c_uint32(self.board_number))
         
     def Voff(self):
-        self.dll.DLLVoff(ct.c_uint32(self.board_number))
+        self.dll.DLLVOff(ct.c_uint32(self.board_number))
         
     def WaitforTelapsed(self, t_us):
         success = self.dll.DLLWaitforTelapsed(ct.c_uint32(t_us))
