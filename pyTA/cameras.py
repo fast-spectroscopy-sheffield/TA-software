@@ -153,11 +153,12 @@ class StresingCameras(QObject):
     def _construct_data_vectors(self):
         if self.cameratype == 'VIS':
             hiloArray = self.array.view(np.uint16)[10:, 0:self.pixels*2]
+            hiloArray = hiloArray.reshape(hiloArray.shape[0], 2, self.pixels)
         elif self.cameratype == 'NIR':
             hiloArray = self.array.view(np.uint16)[5:int((self.number_of_scans+10)/2), 0:self.pixels*4]
+            hiloArray = hiloArray.reshape(hiloArray.shape[0]*2, 2, self.pixels)
         else:
             raise ValueError('cameratype must be either \'VIS\' or \'NIR\'')
-        hiloArray = hiloArray.reshape(hiloArray.shape[0], 2, self.pixels)
         self.probe = hiloArray[:, 0, :]
         self.reference = hiloArray[:, 1, :]
     
