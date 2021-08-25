@@ -34,7 +34,7 @@ class PILongStageDelay:
         new_pos_mm = self.convert_ps_to_mm(float(self.t0-time_point_ps))
         self.stage.MOV(self.axis, new_pos_mm)
         self.wait(self.timeout)
-        return False
+        return True  # since chopper REF signal is out of phase
     
     def convert_ps_to_mm(self, time_ps):
         pos_mm = 0.299792458*time_ps/2
@@ -99,7 +99,7 @@ class PIShortStageDelay:
         new_pos_mm = self.convert_ps_to_mm(float(self.t0-time_point_ps))
         self.stage.MOV(self.axis, new_pos_mm)
         self.wait(self.timeout)
-        return False
+        return True  # since chopper REF signal is out of phase
     
     def convert_ps_to_mm(self, time_ps):
         pos_mm = (0.299792458*time_ps/2)-13.0
@@ -147,15 +147,15 @@ class InnolasPinkLaserDelay:
         self.dg.write('LOFF 1,0.0\r')  # set the level offset of AB channel to 0
         self.dg.write('LAMP 1,4.0\r')  # set level amplitude to +4V
         self.dg.write('LPOL 1,1\r')  # set level polarity positive
-        self.dg.write('DLAY 3,2,1e-7\r')  # set output pulse width to 100 ns
         self.dg.write('DLAY 2,0,0\r')  # set output pulse delay to (arbitrary value of) 0
+        self.dg.write('DLAY 3,2,1e-7\r')  # set output pulse width to 100 ns
         self.dg.write('ADVT 1\r')  # enable advanced triggering
         self.dg.write('PRES 1,2\r')  # halve the frequency of AB channel output
         self.dg.write('LOFF 2,0.0\r')  # set the level offset of CD channel to 0, to use as 500 HZ for PCI
         self.dg.write('LAMP 2,4.0\r')  # set CD level amplitude to +4V
         self.dg.write('LPOL 2,1\r')  # set CD level polarity positive
-        self.dg.write('DLAY 5,4,5e-4\r')  # set CD output pulse width to 500 us
         self.dg.write('DLAY 4,0,0\r')  # set CD output pulse delay to (arbitrary value of) 0
+        self.dg.write('DLAY 5,4,5e-4\r')  # set CD output pulse width to 500 us
         self.dg.write('PRES 2,2\r')  # halve the frequency of CD channel output
         self.initialized = True
  

@@ -17,14 +17,14 @@
    <widget class="QTabWidget" name="tabs">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>10</y>
+      <x>20</x>
+      <y>20</y>
       <width>1781</width>
       <height>841</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="hardware_tab">
      <attribute name="title">
@@ -192,6 +192,87 @@
        </property>
       </widget>
       <widget class="QLabel" name="h_delay_status">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>90</y>
+         <width>231</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::Panel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Sunken</enum>
+       </property>
+       <property name="text">
+        <string>ready to connect</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="h_motor_box">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>270</y>
+        <width>251</width>
+        <height>131</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Motor Connections</string>
+      </property>
+      <widget class="QLabel" name="label_75">
+       <property name="geometry">
+        <rect>
+         <x>14</x>
+         <y>30</y>
+         <width>111</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>COM port selection</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="h_motorCOM_dd">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>30</y>
+         <width>111</width>
+         <height>23</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="h_motor_connect_btn">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>60</y>
+         <width>111</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>connect</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="h_motor_disconnect_btn">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>60</y>
+         <width>111</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>disconnect</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="h_motor_status">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -2332,6 +2413,663 @@ background-color: rgb(255, 255, 255);</string>
       <property name="text">
        <string>Green: Probe over Reference</string>
       </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="motor_tab">
+     <attribute name="title">
+      <string>Crystal Stage Motors</string>
+     </attribute>
+     <widget class="QGroupBox" name="motor_parameter_box">
+      <property name="geometry">
+       <rect>
+        <x>9</x>
+        <y>9</y>
+        <width>361</width>
+        <height>141</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Motor Parameters</string>
+      </property>
+      <widget class="QComboBox" name="param_motor_index">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>73</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QDoubleSpinBox" name="param_velocity_spin">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>50</y>
+         <width>62</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QDoubleSpinBox" name="param_accel_spin">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>80</y>
+         <width>62</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QDoubleSpinBox" name="param_jerk_spin">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>110</y>
+         <width>62</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_71">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>20</y>
+         <width>81</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Motor index</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_72">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>50</y>
+         <width>55</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Velocity</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_73">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>80</y>
+         <width>81</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Acceleration</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_74">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>110</y>
+         <width>55</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Jerk</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="motor_move_box">
+      <property name="geometry">
+       <rect>
+        <x>9</x>
+        <y>160</y>
+        <width>361</width>
+        <height>211</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Move</string>
+      </property>
+      <widget class="QComboBox" name="motor_move_index_spin">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>73</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QDoubleSpinBox" name="move_target_spin">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>50</y>
+         <width>71</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLCDNumber" name="move_current_pos_readout">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>80</y>
+         <width>64</width>
+         <height>23</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLCDNumber" name="move_current_time_readout">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>110</y>
+         <width>64</width>
+         <height>23</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QGroupBox" name="move_launch_box">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>139</y>
+         <width>341</width>
+         <height>61</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Launch</string>
+       </property>
+       <widget class="QPushButton" name="move_run_button">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>93</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Run</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="move_stop_button">
+        <property name="geometry">
+         <rect>
+          <x>120</x>
+          <y>20</y>
+          <width>93</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Stop</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QLabel" name="label_60">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>20</y>
+         <width>71</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Motor index</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_61">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>50</y>
+         <width>55</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Target</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_63">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>80</y>
+         <width>91</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Current pos.</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_64">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>110</y>
+         <width>81</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Current time</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="motor_cooscillate_box">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>380</y>
+        <width>361</width>
+        <height>361</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Co-oscillate</string>
+      </property>
+      <widget class="QComboBox" name="motor_1_index_spin">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>73</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="motor_2_index_spin">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>50</y>
+         <width>73</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QGroupBox" name="motor_1_box">
+       <property name="geometry">
+        <rect>
+         <x>9</x>
+         <y>79</y>
+         <width>161</width>
+         <height>171</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Motor 1</string>
+       </property>
+       <widget class="QDoubleSpinBox" name="coosc_m1_zero">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>62</width>
+          <height>22</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QDoubleSpinBox" name="coosc_m1_target1">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>60</y>
+          <width>62</width>
+          <height>22</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QDoubleSpinBox" name="coosc_m1_target2">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>90</y>
+          <width>62</width>
+          <height>22</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLCDNumber" name="coosc_m1_current_pos">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>140</y>
+          <width>64</width>
+          <height>23</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="Line" name="line_2">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>120</y>
+          <width>161</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_40">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>30</y>
+          <width>55</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Zero</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_47">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>60</y>
+          <width>55</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Target 1</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_48">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>90</y>
+          <width>51</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Target 2</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_57">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>140</y>
+          <width>81</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Current pos.</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="motor_2_box">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>80</y>
+         <width>161</width>
+         <height>171</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Motor 2</string>
+       </property>
+       <widget class="QDoubleSpinBox" name="coosc_m2_zero">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>62</width>
+          <height>22</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QDoubleSpinBox" name="coosc_m2_target1">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>60</y>
+          <width>62</width>
+          <height>22</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QDoubleSpinBox" name="coosc_m2_target2">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>90</y>
+          <width>62</width>
+          <height>22</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLCDNumber" name="coosc_m2_current_pos">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>140</y>
+          <width>64</width>
+          <height>23</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="Line" name="line">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>120</y>
+          <width>161</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_54">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>30</y>
+          <width>55</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Zero</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_55">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>60</y>
+          <width>55</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Target 1</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_56">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>90</y>
+          <width>51</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Target 2</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_58">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>140</y>
+          <width>81</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Current pos.</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QDoubleSpinBox" name="delay_spin">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>260</y>
+         <width>62</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QGroupBox" name="coosc_launch_box">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>290</y>
+         <width>341</width>
+         <height>61</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Launch</string>
+       </property>
+       <widget class="QPushButton" name="coosc_run_button">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>93</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Run</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="coosc_stop_button">
+        <property name="geometry">
+         <rect>
+          <x>120</x>
+          <y>20</y>
+          <width>93</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Stop</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QLabel" name="label_28">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>20</y>
+         <width>91</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Motor 1 index</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_29">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>50</y>
+         <width>91</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Motor 2 index</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_59">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>260</y>
+         <width>55</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Delay</string>
+       </property>
+      </widget>
+      <widget class="QLCDNumber" name="coosc_time_readout">
+       <property name="geometry">
+        <rect>
+         <x>200</x>
+         <y>260</y>
+         <width>64</width>
+         <height>23</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_62">
+       <property name="geometry">
+        <rect>
+         <x>270</x>
+         <y>260</y>
+         <width>81</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Current time</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="motor_log_box">
+      <property name="geometry">
+       <rect>
+        <x>390</x>
+        <y>10</y>
+        <width>221</width>
+        <height>731</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Log</string>
+      </property>
+      <widget class="QPlainTextEdit" name="motor_log">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>201</width>
+         <height>701</height>
+        </rect>
+       </property>
+      </widget>
      </widget>
     </widget>
     <widget class="QWidget" name="log_tab">
