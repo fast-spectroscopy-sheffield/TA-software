@@ -897,7 +897,7 @@ class Application(QtGui.QMainWindow):
         return
     
     def add_wavelength_marker(self):
-        self.wavelength_marker = pg.InfiniteLine(self.plot_waves[int(len(self.plot_waves)/2)], movable=True, bounds=[self.plot_waves[0], self.plot_waves[-1]])
+        self.wavelength_marker = pg.InfiniteLine(self.plot_waves[int(len(self.plot_waves)/2)], movable=True, bounds=[min(self.plot_waves), max(self.plot_waves)])
         self.ui.a_spectra_graph.addItem(self.wavelength_marker)
         self.wavelength_marker.sigPositionChangeFinished.connect(self.update_kinetics_wavelength)
         self.wavelength_marker_label = pg.InfLineLabel(self.wavelength_marker, text='{value:.2f}nm', movable=True, position=0.9)
