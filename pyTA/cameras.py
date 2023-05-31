@@ -12,12 +12,12 @@ class Acquisition(QObject):
         self.camera.number_of_scans = number_of_scans
         self.camera.exposure_time_us = exposure_time_us
         self.camera.array = np.zeros((self.camera.number_of_scans+10, self.camera.pixels*2), dtype=np.dtype(np.int32))
-        self.camera.data = self.camera.array[10:]
+        #self.camera.data = self.camera.array[10:]
         
     def update_number_of_scans(self, number_of_scans):
         self.camera.number_of_scans = number_of_scans
         self.camera.array = np.zeros((self.camera.number_of_scans+10, self.camera.pixels*2), dtype=np.dtype(np.int32))
-        self.camera.data = self.camera.array[10:]
+        #self.camera.data = self.camera.array[10:]
         
     start_acquire = pyqtSignal()
     data_ready = pyqtSignal(np.ndarray, np.ndarray, int, int)
@@ -144,10 +144,22 @@ class StresingCameras(QObject):
         self._construct_data_vectors()
         return
         
+    # def _construct_data_vectors(self):
+    #     hiloArray = self.data.view(np.uint16)[:, 0:self.pixels*2]  # temp = shots x (2*pixels)
+    #     hiloArray = hiloArray.reshape(hiloArray.shape[0], 2, self.pixels)
+    #     self.probe = hiloArray[:, 0, :]  # pointers onto self.data
+    #     self.reference = hiloArray[:, 1, :]
+    
     def _construct_data_vectors(self):
-        hiloArray = self.data.view(np.uint16)[:, 0:self.pixels*2]  # temp = shots x (2*pixels)
-        hiloArray = hiloArray.reshape(hiloArray.shape[0], 2, self.pixels)
-        self.probe = hiloArray[:, 0, :]  # pointers onto self.data
+        if self.cameratype == 'VIS':
+            hiloArray = self.array.view(np.uint16)[10:, 0:self.pixels*2]
+            hiloArray = hiloArray.reshape(hiloArray.shape[0], 2, self.pixels)
+        elif self.cameratype == 'NIR':
+            hiloArray = self.array.view(np.uint16)[5:int((self.number_of_scans+10)/2), 0:self.pixels*4]
+            hiloArray = hiloArray.reshape(hiloArray.shape[0]*2, 2, self.pixels)
+        else:
+            raise ValueError('cameratype must be either \'VIS\' or \'NIR\'')
+        self.probe = hiloArray[:, 0, :]
         self.reference = hiloArray[:, 1, :]
     
     def close(self):
@@ -348,10 +360,10 @@ class StresingCameras(QObject):
         return us
     
     def Von(self):
-        self.dll.DLLVon(ct.c_uint32(self.board_number))
+        self.dll.DLLVOn(ct.c_uint32(self.board_number))
         
     def Voff(self):
-        self.dll.DLLVoff(ct.c_uint32(self.board_number))
+        self.dll.DLLVOff(ct.c_uint32(self.board_number))
         
     def WaitforTelapsed(self, t_us):
         success = self.dll.DLLWaitforTelapsed(ct.c_uint32(t_us))

@@ -86,7 +86,7 @@ class Application(QtGui.QMainWindow):
         self.ui.a_distribution_dd.addItem('Exponential')
         self.ui.a_distribution_dd.addItem('Linear')
         self.ui.h_camera_dd.addItem('VIS')
-        #self.ui.h_camera_dd.addItem('NIR')
+        self.ui.h_camera_dd.addItem('NIR')
         self.ui.h_delay_dd.addItem('Pink Laser')
         self.ui.h_delay_dd.addItem('Long Stage')
         self.ui.h_delay_dd.addItem('Short Stage')
@@ -373,7 +373,7 @@ class Application(QtGui.QMainWindow):
             self.ui.d_use_linear_corr.setChecked(True)
             self.ui.d_use_linear_corr.setEnabled(True)
             self.ui.d_set_linear_corr_btn.setEnabled(True)
-            self.use_ir_gain = True if self.h_use_ir_gain.isChecked() else False
+            self.use_ir_gain = True if self.ui.h_use_ir_gain.isChecked() else False
             self.num_pixels = 512
         else:
             self.ui.d_use_linear_corr.setChecked(False)
@@ -1132,7 +1132,7 @@ class Application(QtGui.QMainWindow):
                                   num_pixels)
         if self.ui.d_use_linear_corr.isChecked():
             try:
-                self.bgd_data.linear_pixel_correlation(self.linear_corr)
+                self.bgd.linear_pixel_correlation(self.linear_corr)
             except:
                 self.append_history('Error using linear pixel correction')
         self.bgd.separate_on_off(self.threshold)
