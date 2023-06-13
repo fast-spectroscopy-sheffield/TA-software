@@ -1,4 +1,4 @@
-import visa
+import pyvisa as visa
 from pipython import GCSDevice, pitools
 
 
