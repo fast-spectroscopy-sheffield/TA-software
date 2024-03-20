@@ -934,8 +934,8 @@ class Application(QtGui.QMainWindow):
     def d_error_plot(self):
         self.ui.d_error_graph.plotItem.plot(self.plot_waves, np.log10(self.plot_probe_shot_error), pen='r', clear=True, fillBrush='r')
         if self.ui.d_use_reference.isChecked() is True:         
-            self.ui.d_error_graph.plotItem.plot(self.plot_waves, np.log10(self.plot_ref_shot_error), pen='g', clear=False, fillBrush='g')    
-            self.ui.d_error_graph.plotItem.plot(self.plot_waves, np.log10(self.plot_dtt_error), pen='b', clear=False, fillBrush='b')
+            self.ui.d_error_graph.plotItem.plot(self.plot_waves, np.log10(self.plot_ref_shot_error), pen='b', clear=False, fillBrush='b')    
+            self.ui.d_error_graph.plotItem.plot(self.plot_waves, np.log10(self.plot_dtt_error), pen='g', clear=False, fillBrush='g')
         self.ui.d_error_graph.plotItem.setYRange(-4, 1, padding=0)
         return
         
