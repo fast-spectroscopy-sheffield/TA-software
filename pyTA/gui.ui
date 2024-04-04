@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="hardware_tab">
      <attribute name="title">
@@ -567,6 +567,9 @@
        </property>
       </widget>
       <widget class="QLineEdit" name="a_filepath_le">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -748,7 +751,7 @@
        <property name="geometry">
         <rect>
          <x>240</x>
-         <y>40</y>
+         <y>120</y>
          <width>91</width>
          <height>22</height>
         </rect>
@@ -758,73 +761,13 @@
        <property name="geometry">
         <rect>
          <x>240</x>
-         <y>20</y>
+         <y>100</y>
          <width>91</width>
          <height>21</height>
         </rect>
        </property>
        <property name="text">
         <string>Delay Type</string>
-       </property>
-      </widget>
-      <widget class="QLCDNumber" name="a_sweep_display">
-       <property name="geometry">
-        <rect>
-         <x>240</x>
-         <y>80</y>
-         <width>91</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">color: rgb(255, 255, 0);
-background-color: rgb(0, 0, 0);</string>
-       </property>
-       <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_16">
-       <property name="geometry">
-        <rect>
-         <x>240</x>
-         <y>60</y>
-         <width>91</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Current Sweep</string>
-       </property>
-      </widget>
-      <widget class="QLCDNumber" name="a_time_display">
-       <property name="geometry">
-        <rect>
-         <x>240</x>
-         <y>120</y>
-         <width>91</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">background-color: rgb(0, 0, 0);
-color: rgb(0, 255, 255);</string>
-       </property>
-       <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_17">
-       <property name="geometry">
-        <rect>
-         <x>240</x>
-         <y>100</y>
-         <width>91</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Current Time</string>
        </property>
       </widget>
       <widget class="QDoubleSpinBox" name="a_pinklaser_t0">
@@ -854,6 +797,35 @@ color: rgb(0, 255, 255);</string>
        </property>
        <property name="text">
         <string>Pink Laser Time Zero</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="a_dcshotfactor_sb">
+       <property name="geometry">
+        <rect>
+         <x>280</x>
+         <y>70</y>
+         <width>51</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>10</number>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_28">
+       <property name="geometry">
+        <rect>
+         <x>240</x>
+         <y>50</y>
+         <width>91</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Dark Corr. Shots x</string>
        </property>
       </widget>
      </widget>
@@ -1072,7 +1044,7 @@ color: rgb(0, 255, 255);</string>
         <x>1580</x>
         <y>9</y>
         <width>191</width>
-        <height>81</height>
+        <height>51</height>
        </rect>
       </property>
       <property name="title">
@@ -1082,7 +1054,7 @@ color: rgb(0, 255, 255);</string>
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>30</y>
+         <y>20</y>
          <width>82</width>
          <height>17</height>
         </rect>
@@ -1099,9 +1071,9 @@ color: rgb(0, 255, 255);</string>
       <property name="geometry">
        <rect>
         <x>1580</x>
-        <y>100</y>
+        <y>70</y>
         <width>191</width>
-        <height>601</height>
+        <height>541</height>
        </rect>
       </property>
       <property name="title">
@@ -1111,9 +1083,9 @@ color: rgb(0, 255, 255);</string>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>30</y>
+         <y>20</y>
          <width>171</width>
-         <height>561</height>
+         <height>511</height>
         </rect>
        </property>
       </widget>
@@ -1292,6 +1264,66 @@ color: rgb(0, 255, 255);</string>
       </property>
       <property name="text">
        <string>Sweep Progress</string>
+      </property>
+     </widget>
+     <widget class="QLCDNumber" name="a_time_display">
+      <property name="geometry">
+       <rect>
+        <x>1580</x>
+        <y>680</y>
+        <width>91</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(0, 0, 0);
+color: rgb(0, 255, 255);</string>
+      </property>
+      <property name="segmentStyle">
+       <enum>QLCDNumber::Flat</enum>
+      </property>
+     </widget>
+     <widget class="QLCDNumber" name="a_sweep_display">
+      <property name="geometry">
+       <rect>
+        <x>1580</x>
+        <y>640</y>
+        <width>91</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 0);
+background-color: rgb(0, 0, 0);</string>
+      </property>
+      <property name="segmentStyle">
+       <enum>QLCDNumber::Flat</enum>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_17">
+      <property name="geometry">
+       <rect>
+        <x>1580</x>
+        <y>660</y>
+        <width>91</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Current Time</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_16">
+      <property name="geometry">
+       <rect>
+        <x>1580</x>
+        <y>620</y>
+        <width>91</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Current Sweep</string>
       </property>
      </widget>
     </widget>
@@ -1688,9 +1720,9 @@ color: rgb(0, 255, 255);</string>
       <widget class="QComboBox" name="d_delaytype_dd">
        <property name="geometry">
         <rect>
-         <x>210</x>
+         <x>240</x>
          <y>130</y>
-         <width>121</width>
+         <width>91</width>
          <height>22</height>
         </rect>
        </property>
@@ -1698,7 +1730,7 @@ color: rgb(0, 255, 255);</string>
       <widget class="QLabel" name="label_39">
        <property name="geometry">
         <rect>
-         <x>210</x>
+         <x>240</x>
          <y>110</y>
          <width>81</width>
          <height>21</height>
@@ -1795,7 +1827,7 @@ color: rgb(0, 255, 255);</string>
          <x>90</x>
          <y>70</y>
          <width>141</width>
-         <height>16</height>
+         <height>21</height>
         </rect>
        </property>
        <property name="text">
@@ -1821,14 +1853,14 @@ color: rgb(0, 255, 255);</string>
       <widget class="QLabel" name="label_22">
        <property name="geometry">
         <rect>
-         <x>220</x>
+         <x>240</x>
          <y>60</y>
-         <width>111</width>
+         <width>91</width>
          <height>21</height>
         </rect>
        </property>
        <property name="text">
-        <string>dark correction shots x</string>
+        <string>Dark Corr. Shots x</string>
        </property>
       </widget>
      </widget>
@@ -2088,9 +2120,9 @@ color: rgb(0, 255, 255);</string>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>30</y>
+         <y>20</y>
          <width>171</width>
-         <height>751</height>
+         <height>761</height>
         </rect>
        </property>
       </widget>

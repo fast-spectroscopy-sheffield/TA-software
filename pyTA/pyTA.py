@@ -208,6 +208,7 @@ class Application(QtGui.QMainWindow):
         self.ui.a_pinklaser_t0.valueChanged.connect(self.update_pinklaser_t0)
         self.ui.a_num_shots.valueChanged.connect(self.update_num_shots)
         self.ui.a_num_sweeps.valueChanged.connect(self.update_num_sweeps)
+        self.ui.a_dcshotfactor_sb.valueChanged.connect(self.update_dcshotfactor)
         # acquisition calibration
         self.ui.a_use_calib.toggled.connect(self.update_use_calib)
         self.ui.a_calib_pixel_low.valueChanged.connect(self.update_calib)
@@ -670,8 +671,16 @@ class Application(QtGui.QMainWindow):
         self.update_xlabel()
         return
     
-    def update_d_dcshotfactor(self):
-        self.dcshotfactor = self.ui.d_dcshotfactor_sb.value()
+    def update_dcshotfactor(self): # Via Acquisition tab
+        if self.idle == True: # Stop from being updated while a measurement is running
+            self.dcshotfactor = self.ui.a_dcshotfactor_sb.value() # Update from one in Acquisition
+            self.ui.d_dcshotfactor_sb.setValue(self.dcshotfactor) # Link to one in Diagnostics
+        return
+    
+    def update_d_dcshotfactor(self): # Via Diagnostics tab
+        if self.idle == True: # Stop from being updated while a measurement is running
+            self.dcshotfactor = self.ui.d_dcshotfactor_sb.value() # Update from one in Diagnostics
+            self.ui.a_dcshotfactor_sb.setValue(self.dcshotfactor) # Link to one in Acquisition
         return
     
     def update_xlabel(self):
