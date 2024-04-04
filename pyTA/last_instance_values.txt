@@ -27,3 +27,4 @@ d threshold pixel:1.0
 d threshold value:20000.0
 d time:0.0
 d jogstep:0.1
+dark correction shot factor:8.0

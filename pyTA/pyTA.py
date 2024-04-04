@@ -22,6 +22,9 @@ from sweeps import SweepProcessing
 from cameras import StresingCameras, Acquisition
 from delays import PILongStageDelay, PIShortStageDelay, InnolasPinkLaserDelay
 
+# metadata
+import datetime
+
 # hack to get app to display icon properly (Windows OS only?)
 #import ctypes
 #ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('pyTA')
@@ -142,8 +145,9 @@ class Application(QtGui.QMainWindow):
             self.ui.d_threshold_pixel.setValue(0)
             self.ui.d_threshold_value.setValue(15000)
             self.ui.d_time.setValue(100)
-            self.ui.d_jogstep.setValue(0.01)
+            self.ui.d_jogstep_sb.setValue(0.01)
             self.ui.d_use_linear_corr.setChecked(0)
+            self.ui.d_dcshotfactor_sb.setValue(3)
         else:
             self.ui.a_use_cutoff.setChecked(self.last_instance_values['use cutoff'])
             self.ui.a_cutoff_pixel_low.setValue(self.last_instance_values['cutoff pixel low'])
@@ -183,6 +187,7 @@ class Application(QtGui.QMainWindow):
             self.ui.d_threshold_value.setValue(self.last_instance_values['d threshold value'])
             self.ui.d_time.setValue(self.last_instance_values['d time'])
             self.ui.d_jogstep_sb.setValue(self.last_instance_values['d jogstep'])
+            self.ui.d_dcshotfactor_sb.setValue(self.last_instance_values['dark correction shot factor'])
         
     def setup_gui_connections(self):
         # acquisition file stuff
@@ -208,9 +213,11 @@ class Application(QtGui.QMainWindow):
         self.ui.a_pinklaser_t0.valueChanged.connect(self.update_pinklaser_t0)
         self.ui.a_num_shots.valueChanged.connect(self.update_num_shots)
         self.ui.a_num_sweeps.valueChanged.connect(self.update_num_sweeps)
+        self.ui.a_dcshotfactor_sb.valueChanged.connect(self.update_a_dcshotfactor)
         # acquisition calibration
         self.ui.a_use_calib.toggled.connect(self.update_use_calib)
         self.ui.a_calib_pixel_low.valueChanged.connect(self.update_calib)
+        
         self.ui.a_calib_pixel_high.valueChanged.connect(self.update_calib)
         self.ui.a_calib_wave_low.valueChanged.connect(self.update_calib)
         self.ui.a_calib_wave_high.valueChanged.connect(self.update_calib)
@@ -325,6 +332,7 @@ class Application(QtGui.QMainWindow):
         self.last_instance_values['d threshold value'] = self.ui.d_threshold_value.value()
         self.last_instance_values['d time'] = self.ui.d_time.value()
         self.last_instance_values['d jogstep'] = self.ui.d_jogstep_sb.value()
+        self.last_instance_values['dark correction shot factor'] = self.ui.d_dcshotfactor_sb.value()
         self.last_instance_values.to_csv(self.last_instance_filename, sep=':', header=False)
 
     def exec_h_camera_connect_btn(self):
@@ -393,7 +401,7 @@ class Application(QtGui.QMainWindow):
         elif self.delay_type == 1:  # long stage
             self.append_history('Connecting to long delay stage')
             self.delay = PILongStageDelay(self.longstage_t0)
-        else:  # pink laser
+        else:  # pink laser, delay_type = 0
             self.append_history('Connecting to delay generator')
             self.delay = InnolasPinkLaserDelay(self.pinklaser_t0)
         self.delay.initialise()
@@ -477,28 +485,44 @@ class Application(QtGui.QMainWindow):
         self.metadata['probe power'] = self.ui.a_metadata_probe_power.text()
         self.metadata['probe size'] = self.ui.a_metadata_probe_power.text()
     
-    def update_metadata(self):
+    def update_metadata(self): # these tell you what options/values were specified in the GUI
+        self.metadata['date (yyyy-mm-dd)'] = str(datetime.date.today())
+		# self.metadata['time'] = str(datetime.datetime.now().strftime('%H:%M:%S'))
+        # @todo This time seems to the time a final sweep starts. i.e. if there's 10 sweeps then the time reported is the start of the 10th sweep. Probably there's a way to adjust to the start of the 1st or the end of the 10th.
         self.metadata_changed()
-        if self.delay_type == 0:  # as defined in the drop down box in the GUI
+        self.metadata['camera type'] = self.cameratype
+        if self.delay_type == 2:  # as defined in the drop down box in the GUI
             self.metadata['delay type'] = 'Short Stage'
             self.metadata['time zero'] = self.shortstage_t0
         if self.delay_type == 1:
             self.metadata['delay type'] = 'Long Stage'
             self.metadata['time zero'] = self.longstage_t0
-        if self.delay_type == 2:
+        if self.delay_type == 0:
             self.metadata['delay type'] = 'Pink Laser'
             self.metadata['time zero'] = self.pinklaser_t0
-        self.metadata['num shots'] = self.num_shots  # these tell you what options/values were specified in the GUI
+        self.metadata['time units'] = self.timeunits
+        self.metadata['num shots'] = self.num_shots
+        self.metadata['dark correction shot factor'] = self.dcshotfactor
+        
+        self.metadata['use calibration'] = self.ui.d_use_calib.isChecked()
         self.metadata['calib pixel low'] = self.calib[0]
         self.metadata['calib pixel high'] = self.calib[1]
-        self.metadata['calib wave low'] = self.calib[2]
-        self.metadata['calib wave high'] = self.calib[3]
-        self.metadata['cutoff low'] = self.cutoff[0]
-        self.metadata['cutoff high'] = self.cutoff[1]
+        self.metadata['calib wavelength low'] = self.calib[2]
+        self.metadata['calib wavelength high'] = self.calib[3]
+        
+        self.metadata['use cutoff'] = self.use_cutoff
+        self.metadata['cutoff pixel low'] = self.cutoff[0]
+        self.metadata['cutoff pixel high'] = self.cutoff[1]
+        
         self.metadata['use reference'] = self.ui.d_use_reference.isChecked()
         self.metadata['avg off shots'] = self.ui.d_use_avg_off_shots.isChecked()
         self.metadata['use ref manip'] = self.ui.d_use_ref_manip.isChecked()
-        self.metadata['use calib'] = self.ui.d_use_calib.isChecked()
+        self.metadata['ref manip vertical stretch'] = self.refman[0] # Note that self.refman = [...] somewhere in pyTA.py
+        self.metadata['ref manip vertical offset'] = self.refman[1]
+        self.metadata['ref manip horizontal offset'] = self.refman[2]
+        self.metadata['ref manip scale centre'] = self.refman[3]
+        self.metadata['ref manip scale factor'] = self.refman[4]
+        
         
     def update_use_timefile(self):
         self.use_timefile = self.ui.a_timefile_cb.isChecked()
@@ -670,8 +694,16 @@ class Application(QtGui.QMainWindow):
         self.update_xlabel()
         return
     
-    def update_d_dcshotfactor(self):
-        self.dcshotfactor = self.ui.d_dcshotfactor_sb.value()
+    def update_a_dcshotfactor(self): # Via Acquisition tab
+        if self.idle == True: # Stop from being updated while a measurement is running
+            self.dcshotfactor = self.ui.a_dcshotfactor_sb.value() # Update from one in Acquisition
+            self.ui.d_dcshotfactor_sb.setValue(self.dcshotfactor) # Link to one in Diagnostics
+        return
+    
+    def update_d_dcshotfactor(self): # Via Diagnostics tab
+        if self.idle == True: # Stop from being updated while a measurement is running
+            self.dcshotfactor = self.ui.d_dcshotfactor_sb.value() # Update from one in Diagnostics
+            self.ui.a_dcshotfactor_sb.setValue(self.dcshotfactor) # Link to one in Acquisition
         return
     
     def update_xlabel(self):
@@ -771,7 +803,7 @@ class Application(QtGui.QMainWindow):
             self.append_history('Successfully set linear pixel correction')
             print(self.linear_corr)
         except:
-            self.append_history('Error setting linear pixel correction')
+            self.append_history('Error setting linear pixel correction, line~774')
         return
         
     def append_history(self, message):
@@ -934,8 +966,8 @@ class Application(QtGui.QMainWindow):
     def d_error_plot(self):
         self.ui.d_error_graph.plotItem.plot(self.plot_waves, np.log10(self.plot_probe_shot_error), pen='r', clear=True, fillBrush='r')
         if self.ui.d_use_reference.isChecked() is True:         
-            self.ui.d_error_graph.plotItem.plot(self.plot_waves, np.log10(self.plot_ref_shot_error), pen='g', clear=False, fillBrush='g')    
-            self.ui.d_error_graph.plotItem.plot(self.plot_waves, np.log10(self.plot_dtt_error), pen='b', clear=False, fillBrush='b')
+            self.ui.d_error_graph.plotItem.plot(self.plot_waves, np.log10(self.plot_ref_shot_error), pen='b', clear=False, fillBrush='b')    
+            self.ui.d_error_graph.plotItem.plot(self.plot_waves, np.log10(self.plot_dtt_error), pen='g', clear=False, fillBrush='g')
         self.ui.d_error_graph.plotItem.setYRange(-4, 1, padding=0)
         return
         
@@ -1072,7 +1104,7 @@ class Application(QtGui.QMainWindow):
             try:
                 self.current_data.linear_pixel_correlation(self.linear_corr)
             except:
-                self.append_history('Error using linear pixel correction')
+                self.append_history('Error using linear pixel correction, line~1075')
         self.high_trig_std = self.current_data.separate_on_off(self.threshold, self.tau_flip_request)
         if self.ui.a_test_run_btn.isChecked() is False:
             self.current_data.sub_bgd(self.bgd)
@@ -1134,7 +1166,7 @@ class Application(QtGui.QMainWindow):
             try:
                 self.bgd.linear_pixel_correlation(self.linear_corr)
             except:
-                self.append_history('Error using linear pixel correction')
+                self.append_history('Error using linear pixel correction, line~1137')
         self.bgd.separate_on_off(self.threshold)
         self.bgd.average_shots() 
         self.run()          
@@ -1305,7 +1337,7 @@ class Application(QtGui.QMainWindow):
             try:
                 self.current_data.linear_pixel_correlation(self.linear_corr)
             except:
-                self.append_history('Error using linear pixel correction')
+                self.append_history('Error using linear pixel correction, line~1308')
         self.current_data.separate_on_off(self.threshold,self.tau_flip_request)
         if self.ui.a_test_run_btn.isChecked() is False:
             self.current_data.sub_bgd(self.bgd)
@@ -1349,7 +1381,7 @@ class Application(QtGui.QMainWindow):
             try:
                 self.bgd.linear_pixel_correlation(self.linear_corr)
             except:
-                self.append_history('Error using linear pixel correction')
+                self.append_history('Error using linear pixel correction, line~1352')
         self.bgd.separate_on_off(self.threshold)
         self.bgd.average_shots()
         self.d_run()          
