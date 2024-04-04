@@ -771,7 +771,7 @@ class Application(QtGui.QMainWindow):
             self.append_history('Successfully set linear pixel correction')
             print(self.linear_corr)
         except:
-            self.append_history('Error setting linear pixel correction')
+            self.append_history('Error setting linear pixel correction, line~774')
         return
         
     def append_history(self, message):
@@ -1072,7 +1072,7 @@ class Application(QtGui.QMainWindow):
             try:
                 self.current_data.linear_pixel_correlation(self.linear_corr)
             except:
-                self.append_history('Error using linear pixel correction')
+                self.append_history('Error using linear pixel correction, line~1075')
         self.high_trig_std = self.current_data.separate_on_off(self.threshold, self.tau_flip_request)
         if self.ui.a_test_run_btn.isChecked() is False:
             self.current_data.sub_bgd(self.bgd)
@@ -1134,7 +1134,7 @@ class Application(QtGui.QMainWindow):
             try:
                 self.bgd.linear_pixel_correlation(self.linear_corr)
             except:
-                self.append_history('Error using linear pixel correction')
+                self.append_history('Error using linear pixel correction, line~1137')
         self.bgd.separate_on_off(self.threshold)
         self.bgd.average_shots() 
         self.run()          
@@ -1305,7 +1305,7 @@ class Application(QtGui.QMainWindow):
             try:
                 self.current_data.linear_pixel_correlation(self.linear_corr)
             except:
-                self.append_history('Error using linear pixel correction')
+                self.append_history('Error using linear pixel correction, line~1308')
         self.current_data.separate_on_off(self.threshold,self.tau_flip_request)
         if self.ui.a_test_run_btn.isChecked() is False:
             self.current_data.sub_bgd(self.bgd)
@@ -1349,7 +1349,7 @@ class Application(QtGui.QMainWindow):
             try:
                 self.bgd.linear_pixel_correlation(self.linear_corr)
             except:
-                self.append_history('Error using linear pixel correction')
+                self.append_history('Error using linear pixel correction, line~1352')
         self.bgd.separate_on_off(self.threshold)
         self.bgd.average_shots()
         self.d_run()          
