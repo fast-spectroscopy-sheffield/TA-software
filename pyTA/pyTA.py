@@ -142,8 +142,9 @@ class Application(QtGui.QMainWindow):
             self.ui.d_threshold_pixel.setValue(0)
             self.ui.d_threshold_value.setValue(15000)
             self.ui.d_time.setValue(100)
-            self.ui.d_jogstep.setValue(0.01)
+            self.ui.d_jogstep_sb.setValue(0.01)
             self.ui.d_use_linear_corr.setChecked(0)
+            self.ui.d_dcshotfactor_sb.setValue(3)
         else:
             self.ui.a_use_cutoff.setChecked(self.last_instance_values['use cutoff'])
             self.ui.a_cutoff_pixel_low.setValue(self.last_instance_values['cutoff pixel low'])
@@ -183,6 +184,7 @@ class Application(QtGui.QMainWindow):
             self.ui.d_threshold_value.setValue(self.last_instance_values['d threshold value'])
             self.ui.d_time.setValue(self.last_instance_values['d time'])
             self.ui.d_jogstep_sb.setValue(self.last_instance_values['d jogstep'])
+            self.ui.d_dcshotfactor_sb.setValue(self.last_instance_values['dark correction shot factor'])
         
     def setup_gui_connections(self):
         # acquisition file stuff
@@ -208,10 +210,11 @@ class Application(QtGui.QMainWindow):
         self.ui.a_pinklaser_t0.valueChanged.connect(self.update_pinklaser_t0)
         self.ui.a_num_shots.valueChanged.connect(self.update_num_shots)
         self.ui.a_num_sweeps.valueChanged.connect(self.update_num_sweeps)
-        self.ui.a_dcshotfactor_sb.valueChanged.connect(self.update_dcshotfactor)
+        self.ui.a_dcshotfactor_sb.valueChanged.connect(self.update_a_dcshotfactor)
         # acquisition calibration
         self.ui.a_use_calib.toggled.connect(self.update_use_calib)
         self.ui.a_calib_pixel_low.valueChanged.connect(self.update_calib)
+        
         self.ui.a_calib_pixel_high.valueChanged.connect(self.update_calib)
         self.ui.a_calib_wave_low.valueChanged.connect(self.update_calib)
         self.ui.a_calib_wave_high.valueChanged.connect(self.update_calib)
@@ -326,6 +329,7 @@ class Application(QtGui.QMainWindow):
         self.last_instance_values['d threshold value'] = self.ui.d_threshold_value.value()
         self.last_instance_values['d time'] = self.ui.d_time.value()
         self.last_instance_values['d jogstep'] = self.ui.d_jogstep_sb.value()
+        self.last_instance_values['dark correction shot factor'] = self.ui.d_dcshotfactor_sb.value()
         self.last_instance_values.to_csv(self.last_instance_filename, sep=':', header=False)
 
     def exec_h_camera_connect_btn(self):
@@ -671,7 +675,7 @@ class Application(QtGui.QMainWindow):
         self.update_xlabel()
         return
     
-    def update_dcshotfactor(self): # Via Acquisition tab
+    def update_a_dcshotfactor(self): # Via Acquisition tab
         if self.idle == True: # Stop from being updated while a measurement is running
             self.dcshotfactor = self.ui.a_dcshotfactor_sb.value() # Update from one in Acquisition
             self.ui.d_dcshotfactor_sb.setValue(self.dcshotfactor) # Link to one in Diagnostics
