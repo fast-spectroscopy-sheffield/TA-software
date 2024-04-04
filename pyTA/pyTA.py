@@ -487,9 +487,9 @@ class Application(QtGui.QMainWindow):
     
     def update_metadata(self): # these tell you what options/values were specified in the GUI
         self.metadata['date (yyyy-mm-dd)'] = str(datetime.date.today())
-        self.metadata_changed()
-        # self.metadata['time'] = str(datetime.datetime.now().strftime('%H:%M:%S'))
+		# self.metadata['time'] = str(datetime.datetime.now().strftime('%H:%M:%S'))
         # @todo This time seems to the time a final sweep starts. i.e. if there's 10 sweeps then the time reported is the start of the 10th sweep. Probably there's a way to adjust to the start of the 1st or the end of the 10th.
+        self.metadata_changed()
         self.metadata['camera type'] = self.cameratype
         if self.delay_type == 2:  # as defined in the drop down box in the GUI
             self.metadata['delay type'] = 'Short Stage'
