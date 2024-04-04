@@ -22,6 +22,9 @@ from sweeps import SweepProcessing
 from cameras import StresingCameras, Acquisition
 from delays import PILongStageDelay, PIShortStageDelay, InnolasPinkLaserDelay
 
+# metadata
+import datetime
+
 # hack to get app to display icon properly (Windows OS only?)
 #import ctypes
 #ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('pyTA')
@@ -398,7 +401,7 @@ class Application(QtGui.QMainWindow):
         elif self.delay_type == 1:  # long stage
             self.append_history('Connecting to long delay stage')
             self.delay = PILongStageDelay(self.longstage_t0)
-        else:  # pink laser
+        else:  # pink laser, delay_type = 0
             self.append_history('Connecting to delay generator')
             self.delay = InnolasPinkLaserDelay(self.pinklaser_t0)
         self.delay.initialise()
@@ -482,28 +485,44 @@ class Application(QtGui.QMainWindow):
         self.metadata['probe power'] = self.ui.a_metadata_probe_power.text()
         self.metadata['probe size'] = self.ui.a_metadata_probe_power.text()
     
-    def update_metadata(self):
+    def update_metadata(self): # these tell you what options/values were specified in the GUI
+        self.metadata['date (yyyy-mm-dd)'] = str(datetime.date.today())
         self.metadata_changed()
-        if self.delay_type == 0:  # as defined in the drop down box in the GUI
+        # self.metadata['time'] = str(datetime.datetime.now().strftime('%H:%M:%S'))
+        # @todo This time seems to the time a final sweep starts. i.e. if there's 10 sweeps then the time reported is the start of the 10th sweep. Probably there's a way to adjust to the start of the 1st or the end of the 10th.
+        self.metadata['camera type'] = self.cameratype
+        if self.delay_type == 2:  # as defined in the drop down box in the GUI
             self.metadata['delay type'] = 'Short Stage'
             self.metadata['time zero'] = self.shortstage_t0
         if self.delay_type == 1:
             self.metadata['delay type'] = 'Long Stage'
             self.metadata['time zero'] = self.longstage_t0
-        if self.delay_type == 2:
+        if self.delay_type == 0:
             self.metadata['delay type'] = 'Pink Laser'
             self.metadata['time zero'] = self.pinklaser_t0
-        self.metadata['num shots'] = self.num_shots  # these tell you what options/values were specified in the GUI
+        self.metadata['time units'] = self.timeunits
+        self.metadata['num shots'] = self.num_shots
+        self.metadata['dark correction shot factor'] = self.dcshotfactor
+        
+        self.metadata['use calibration'] = self.ui.d_use_calib.isChecked()
         self.metadata['calib pixel low'] = self.calib[0]
         self.metadata['calib pixel high'] = self.calib[1]
-        self.metadata['calib wave low'] = self.calib[2]
-        self.metadata['calib wave high'] = self.calib[3]
-        self.metadata['cutoff low'] = self.cutoff[0]
-        self.metadata['cutoff high'] = self.cutoff[1]
+        self.metadata['calib wavelength low'] = self.calib[2]
+        self.metadata['calib wavelength high'] = self.calib[3]
+        
+        self.metadata['use cutoff'] = self.use_cutoff
+        self.metadata['cutoff pixel low'] = self.cutoff[0]
+        self.metadata['cutoff pixel high'] = self.cutoff[1]
+        
         self.metadata['use reference'] = self.ui.d_use_reference.isChecked()
         self.metadata['avg off shots'] = self.ui.d_use_avg_off_shots.isChecked()
         self.metadata['use ref manip'] = self.ui.d_use_ref_manip.isChecked()
-        self.metadata['use calib'] = self.ui.d_use_calib.isChecked()
+        self.metadata['ref manip vertical stretch'] = self.refman[0] # Note that self.refman = [...] somewhere in pyTA.py
+        self.metadata['ref manip vertical offset'] = self.refman[1]
+        self.metadata['ref manip horizontal offset'] = self.refman[2]
+        self.metadata['ref manip scale centre'] = self.refman[3]
+        self.metadata['ref manip scale factor'] = self.refman[4]
+        
         
     def update_use_timefile(self):
         self.use_timefile = self.ui.a_timefile_cb.isChecked()
