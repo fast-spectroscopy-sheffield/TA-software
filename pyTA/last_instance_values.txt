@@ -27,9 +27,9 @@ d threshold pixel:1
 d threshold value:20000
 d time:0.0
 d jogstep:1.0
-motor COM:COM6
-motor coosc index 1:1
-motor coosc index 2:2
+motor COM:COM1
+motor coosc index 1:
+motor coosc index 2:
 motor coosc zero 1:4.5
 motor coosc zero 2:5.5
 motor coosc 1 target 1:6.5
@@ -37,5 +37,5 @@ motor coosc 1 target 2:2.5
 motor coosc 2 target 1:7.5
 motor coosc 2 target 2:3.5
 motor coosc delay:0.0
-motor move index:1
+motor move index:
 motor move target:5.5
