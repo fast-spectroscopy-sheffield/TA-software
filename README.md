@@ -24,6 +24,10 @@ python hdf5-converter.py
 ```
 When finished run `conda deactivate`.
 
+### development ###
+
+Things to fix throughout the python code are denoted with `@todo`.
+
 ### key things to implement ###
 
  - [ ] Set up and test NIR detectors
@@ -33,6 +37,7 @@ When finished run `conda deactivate`.
 
  - [ ] Fix the quality control algorithm in `dtt.py` so that bad data is properly rejected but we don't get stuck in a loop of retaking the data point. Not sure yet what the solution is.
  - [x] Output correct metadata.txt file (e.g. seems to think we're always using the `short delay stage` currently), and output more things (the more information the better)
+ - [ ] **Properly** fix weird bug in saving which motor COM port was last used (seems to be due to putting a string into the `last_instance_values.txt`). Currently doesn't save it at all as a hack-fix!
  
 ### nice things to have ###
  - [x] Have *dark correction shots x* in the _Acquisition_ tab as well
