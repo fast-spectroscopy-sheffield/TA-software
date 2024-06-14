@@ -14,7 +14,7 @@ distribution:0.0
 tstart:-5.0
 tend:1000000.0
 num tpoints:200.0
-num shots:1000.0
+num shots:200.0
 num sweeps:5.0
 d use ref manip:1.0
 d display mode spectra:0.0
@@ -27,10 +27,10 @@ d threshold pixel:1.0
 d threshold value:20000.0
 d time:0.0
 d jogstep:1.0
-dark correction shot factor:8.0
-motor COM:COM6
-motor coosc index 1:1
-motor coosc index 2:2
+dark correction shot factor:4
+motor COM:
+motor coosc index 1:
+motor coosc index 2:
 motor coosc zero 1:4.5
 motor coosc zero 2:5.5
 motor coosc 1 target 1:6.5
@@ -38,5 +38,5 @@ motor coosc 1 target 2:2.5
 motor coosc 2 target 1:7.5
 motor coosc 2 target 2:3.5
 motor coosc delay:0.0
-motor move index:1
-motor move target:5.5
+motor move index:
+motor move target:5.0

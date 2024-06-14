@@ -220,7 +220,7 @@ class Application(QtGui.QMainWindow):
             self.ui.coosc_m2_target2.setValue(self.last_instance_values['motor coosc 2 target 2'])
             self.ui.delay_spin.setValue(self.last_instance_values['motor coosc delay'])
             self.ui.move_target_spin.setValue(self.last_instance_values['motor move target'])
-            self.ui.d_dcshotfactor_sb.setValue(self.last_instance_values['dark correction shot factor'])
+            self.ui.d_dcshotfactor_sb.setValue(int(self.last_instance_values['dark correction shot factor']))
         
     def setup_gui_connections(self):
         # acquisition file stuff
@@ -395,7 +395,9 @@ class Application(QtGui.QMainWindow):
         self.last_instance_values['d threshold value'] = self.ui.d_threshold_value.value()
         self.last_instance_values['d time'] = self.ui.d_time.value()
         self.last_instance_values['d jogstep'] = self.ui.d_jogstep_sb.value()
-        self.last_instance_values['motor COM'] = self.motor_comport
+        self.last_instance_values['motor COM'] = []
+		# self.last_instance_values['motor COM'] = self.motor_comport
+		# @todo there is a weird bug here where if you save self.motor_comport, e.g. as 'COM6', all the last_instance_values.txt entries are recognised as strings (I guess because COM# is definitely a string, not a float). Yields a 'ValueError: invalid literal for int() with base 10' when you start pyTA.py. I've hacked a fix by just not saving the last motor COM port (looks blank in the last_instance_values.txt) but a better fix is needed - perhaps use numbers to represent COM ports, similar to the delay type?
         self.last_instance_values['motor coosc index 1'] = self.ui.motor_1_index_spin.currentText()
         self.last_instance_values['motor coosc index 2'] = self.ui.motor_2_index_spin.currentText()
         self.last_instance_values['motor coosc zero 1'] = self.ui.coosc_m1_zero.value()
