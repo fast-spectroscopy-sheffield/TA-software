@@ -108,7 +108,7 @@ class Application(QtWidgets.QMainWindow):
             array = np.array(f['Average']).T
             fpath = os.path.join(savedir, 'average_dTT.Dtc')
             self.write_console('saving averaged dT/T data to {0}'.format(str(fpath)))
-            np.savetxt(fpath, array, delimiter=',')
+            #np.savetxt(fpath, array, delimiter=',')
             np.savetxt(fpath.replace('.Dtc', '.csv'), array, delimiter=',')
         if self.ui.metadata_check.isChecked():
             array = np.array(f['Metadata'])
@@ -138,7 +138,7 @@ class Application(QtWidgets.QMainWindow):
                 array = np.array(group[sweep]).T
                 fpath = os.path.join(folder, 'dTT.Dtc')
                 self.write_console('saving sweep dT/T data to {0}'.format(fpath))
-                np.savetxt(fpath, array, delimiter=',')
+                #np.savetxt(fpath, array, delimiter=',')
                 np.savetxt(fpath.replace('.Dtc', '.csv'), array, delimiter=',')
         f.close()
         self.write_console('finished file <{0}>'.format(fname))
