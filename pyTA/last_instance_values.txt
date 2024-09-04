@@ -14,7 +14,7 @@ distribution:0.0
 tstart:-5.0
 tend:1000000.0
 num tpoints:200.0
-num shots:1000.0
+num shots:50.0
 num sweeps:8.0
 d use ref manip:1.0
 d display mode spectra:0.0
@@ -27,4 +27,4 @@ d threshold pixel:1.0
 d threshold value:20000.0
 d time:1.5
 d jogstep:0.5
-dark correction shot factor:10.0
+dark correction shot factor:1.0
