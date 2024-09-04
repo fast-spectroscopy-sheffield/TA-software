@@ -110,7 +110,6 @@ class Application(QtGui.QMainWindow):
         self.comport_list.sort() # sorts them 'alphabetically' for neatness
         for comport in self.comport_list:
             self.ui.h_motorCOM_dd.addItem(comport)
-        print(self.comport_list)
         self.ui.h_motor_disconnect_btn.setEnabled(False)
         # progress bars
         self.ui.a_measurement_progress_bar.setValue(0)
