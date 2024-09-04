@@ -67,7 +67,7 @@ class Application(QtGui.QMainWindow):
         self.safe_to_exit = True
         self.initialise_gui()
         self.show()
-        self.motor_comport = ""
+        self.motor_comport = 'COM6'
         self.write_app_status('application launched', colour='blue')
         
     def closeEvent(self, event):
@@ -107,7 +107,9 @@ class Application(QtGui.QMainWindow):
         # check COM ports for motor connection
         for comport in serial.tools.list_ports.comports():
             self.comport_list.append(comport.name)
-            self.ui.h_motorCOM_dd.addItem(comport.name)
+        self.comport_list.sort() # sorts them 'alphabetically' for neatness
+        for comport in self.comport_list:
+            self.ui.h_motorCOM_dd.addItem(comport)
         self.ui.h_motor_disconnect_btn.setEnabled(False)
         # progress bars
         self.ui.a_measurement_progress_bar.setValue(0)
@@ -181,10 +183,11 @@ class Application(QtGui.QMainWindow):
             self.ui.d_calib_pixel_high.setValue(int(self.last_instance_values['calib pixel high']))
             self.ui.d_calib_wave_low.setValue(int(self.last_instance_values['calib wavelength low']))
             self.ui.d_calib_wave_high.setValue(int(self.last_instance_values['calib wavelength high']))
-            for key in self.last_instance_values.keys():
-                if isinstance(self.last_instance_values[key], str):
-                    if key != 'motor COM':
-                        self.last_instance_values[key] = float(self.last_instance_values[key])
+            # for key in self.last_instance_values.keys():
+            #     if isinstance(self.last_instance_values[key], str):
+            #         if key != 'motor COM':
+            #             self.last_instance_values[key] = float(self.last_instance_values[key])
+			# @todo fix the above cf. not saving motor COM number properly
             self.ui.a_shortstage_t0.setValue(self.last_instance_values['short stage time zero'])
             self.ui.a_longstage_t0.setValue(self.last_instance_values['long stage time zero'])
             self.ui.a_pinklaser_t0.setValue(self.last_instance_values['pink laser time zero'])
@@ -210,8 +213,9 @@ class Application(QtGui.QMainWindow):
             self.ui.d_time.setValue(self.last_instance_values['d time'])
             self.ui.d_dcshotfactor_sb.setValue(int(self.last_instance_values['dark correction shot factor']))
             self.ui.d_jogstep_sb.setValue(self.last_instance_values['d jogstep']) 
-            if self.last_instance_values['motor COM'] in self.comport_list:
-                self.ui.h_motorCOM_dd.setCurrentIndex(self.ui.h_motorCOM_dd.findText(self.last_instance_values['motor COM']))
+            # if self.last_instance_values['motor COM'] in self.comport_list:
+                # self.ui.h_motorCOM_dd.setCurrentIndex(self.ui.h_motorCOM_dd.findText(self.last_instance_values['motor COM']))
+			# @todo fix the above cf. not saving motor COM number properly
             self.ui.coosc_m1_zero.setValue(self.last_instance_values['motor coosc zero 1'])
             self.ui.coosc_m2_zero.setValue(self.last_instance_values['motor coosc zero 2'])
             self.ui.coosc_m1_target1.setValue(self.last_instance_values['motor coosc 1 target 1'])
@@ -395,9 +399,8 @@ class Application(QtGui.QMainWindow):
         self.last_instance_values['d threshold value'] = self.ui.d_threshold_value.value()
         self.last_instance_values['d time'] = self.ui.d_time.value()
         self.last_instance_values['d jogstep'] = self.ui.d_jogstep_sb.value()
-        self.last_instance_values['motor COM'] = []
 		# self.last_instance_values['motor COM'] = self.motor_comport
-		# @todo there is a weird bug here where if you save self.motor_comport, e.g. as 'COM6', all the last_instance_values.txt entries are recognised as strings (I guess because COM# is definitely a string, not a float). Yields a 'ValueError: invalid literal for int() with base 10' when you start pyTA.py. I've hacked a fix by just not saving the last motor COM port (looks blank in the last_instance_values.txt) but a better fix is needed - perhaps use numbers to represent COM ports, similar to the delay type?
+		# @todo there is a weird bug here where if you save self.motor_comport, e.g. as 'COM6', all the last_instance_values.txt entries are recognised as strings (I guess because COM# is definitely a string, not a float). Yields a 'ValueError: invalid literal for int() with base 10' when you start pyTA.py. I've hacked a fix by just not saving the last motor COM port (no entry in the last_instance_values.txt) but a better fix is needed - perhaps use numbers to represent COM ports, similar to the delay type?
         self.last_instance_values['motor coosc index 1'] = self.ui.motor_1_index_spin.currentText()
         self.last_instance_values['motor coosc index 2'] = self.ui.motor_2_index_spin.currentText()
         self.last_instance_values['motor coosc zero 1'] = self.ui.coosc_m1_zero.value()
