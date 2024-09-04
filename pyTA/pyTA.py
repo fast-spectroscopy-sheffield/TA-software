@@ -1263,14 +1263,14 @@ class Application(QtGui.QMainWindow):
     def post_sweep(self):
         if self.ui.a_test_run_btn.isChecked() is False:
             self.append_history('Saving Sweep '+str(self.current_sweep.sweep_index))
-            try:
-                self.current_sweep.save_current_data(self.waves)
-                self.current_sweep.save_avg_data(self.waves)
-                self.current_sweep.save_metadata_each_sweep(self.current_data.probe_on,
-                                                            self.current_data.reference_on,
-                                                            self.current_data.probe_shot_error)
-            except:
-                self.message_error_saving()
+#            try: @todo This try thing seems to stop data collection with warnings... any way to get it to stop data collection with errors only?
+            self.current_sweep.save_current_data(self.waves)
+            self.current_sweep.save_avg_data(self.waves)
+            self.current_sweep.save_metadata_each_sweep(self.current_data.probe_on,
+                                                        self.current_data.reference_on,
+                                                        self.current_data.probe_shot_error)
+#            except:
+#                self.message_error_saving()
         
         self.current_sweep.next_sweep()
         
