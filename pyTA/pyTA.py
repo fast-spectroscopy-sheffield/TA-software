@@ -99,6 +99,9 @@ class Application(QtGui.QMainWindow):
         self.ui.d_display_mode_spectra.addItem('Reference')
         self.ui.a_distribution_dd.addItem('Exponential')
         self.ui.a_distribution_dd.addItem('Linear')
+        self.ui.a_steporder_dd.addItem('Linear')
+        # self.ui.a_steporder_dd.addItem('Random')
+        # @todo sort out Random stepping order!
         self.ui.h_camera_dd.addItem('VIS')
         self.ui.h_camera_dd.addItem('NIR')
         self.ui.h_delay_dd.addItem('Pink Laser')
