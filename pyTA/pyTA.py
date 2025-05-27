@@ -682,7 +682,7 @@ class Application(QtGui.QMainWindow):
     
     @staticmethod
     def calculate_times_exponential(start_time, end_time, num_points):
-        num_before_zero = 20
+        num_before_zero = 5
         step = 0.1
         before_zero = np.linspace(start_time, 0, num_before_zero, endpoint=False)
         zero_onwards = np.geomspace(step, end_time+step, num_points-num_before_zero)-step
