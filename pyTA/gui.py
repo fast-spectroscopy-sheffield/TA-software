@@ -650,7 +650,7 @@ class Ui_pyTAgui(object):
         self.d_jogright.setObjectName("d_jogright")
         self.d_jogstep_sb = QtWidgets.QDoubleSpinBox(self.d_times_box)
         self.d_jogstep_sb.setGeometry(QtCore.QRect(10, 30, 81, 21))
-        self.d_jogstep_sb.setMaximum(10.0)
+        self.d_jogstep_sb.setMaximum(1000.0)
         self.d_jogstep_sb.setSingleStep(0.01)
         self.d_jogstep_sb.setProperty("value", 0.01)
         self.d_jogstep_sb.setObjectName("d_jogstep_sb")
