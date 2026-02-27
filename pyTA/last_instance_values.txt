@@ -1,41 +1,41 @@
 use cutoff:1.0
-cutoff pixel low:150.0
-cutoff pixel high:750.0
+cutoff pixel low:100.0
+cutoff pixel high:760.0
 use calib:1.0
-calib pixel low:438.0
-calib pixel high:200.0
-calib wavelength low:850.0
-calib wavelength high:1000.0
+calib pixel low:168.0
+calib pixel high:390.0
+calib wavelength low:700.0
+calib wavelength high:600.0
 short stage time zero:0.0
-long stage time zero:3345.94
-pink laser time zero:2648.7
-delay type:0.0
+long stage time zero:3981.0
+pink laser time zero:2598.0
+delay type:1.0
 distribution:0.0
-tstart:-5.0
-tend:1000000.0
-num tpoints:200.0
-num shots:50.0
-num sweeps:1.0
+tstart:-10.0
+tend:3000.0
+num tpoints:250.0
+num shots:2000.0
+num sweeps:3.0
 d use ref manip:1.0
 d display mode spectra:0.0
-d refman horizontal offset:2.0
-d refman scale center:613.0
-d refman scale factor:1.005
+d refman horizontal offset:6.0
+d refman scale center:409.0
+d refman scale factor:1.003
 d refman vertical offset:0.0
 d refman vertical stretch:1.0
 d threshold pixel:1.0
 d threshold value:20000.0
-d time:0.0
-d jogstep:1.0
-dark correction shot factor:1
+d time:2.5
+d jogstep:0.1
+dark correction shot factor:3
 motor coosc index 1:
 motor coosc index 2:
-motor coosc zero 1:4.5
-motor coosc zero 2:5.5
+motor coosc zero 1:5.5
+motor coosc zero 2:9.0
 motor coosc 1 target 1:6.5
-motor coosc 1 target 2:2.5
-motor coosc 2 target 1:7.5
-motor coosc 2 target 2:3.5
+motor coosc 1 target 2:4.5
+motor coosc 2 target 1:10.0
+motor coosc 2 target 2:8.0
 motor coosc delay:0.0
 motor move index:
-motor move target:5.0
+motor move target:8.5

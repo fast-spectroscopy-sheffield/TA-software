@@ -99,6 +99,9 @@ class Application(QtGui.QMainWindow):
         self.ui.d_display_mode_spectra.addItem('Reference')
         self.ui.a_distribution_dd.addItem('Exponential')
         self.ui.a_distribution_dd.addItem('Linear')
+        self.ui.a_steporder_dd.addItem('Linear')
+        # self.ui.a_steporder_dd.addItem('Random')
+        # @todo sort out Random stepping order!
         self.ui.h_camera_dd.addItem('VIS')
         self.ui.h_camera_dd.addItem('NIR')
         self.ui.h_delay_dd.addItem('Pink Laser')
@@ -679,7 +682,7 @@ class Application(QtGui.QMainWindow):
     
     @staticmethod
     def calculate_times_exponential(start_time, end_time, num_points):
-        num_before_zero = 20
+        num_before_zero = 10
         step = 0.1
         before_zero = np.linspace(start_time, 0, num_before_zero, endpoint=False)
         zero_onwards = np.geomspace(step, end_time+step, num_points-num_before_zero)-step
