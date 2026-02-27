@@ -30,7 +30,8 @@ Things to fix throughout the python code are denoted with `@todo`.
 
 ### key things to implement ###
 
- - [ ] Set up and test NIR detectors
+ - [x] Set up and test NIR detectors for sub-ps TA
+ - [ ] Set up and test NIR detectors for nsTA - current have a $\tau$ flip-related bug, among other issues
  - [ ] B-matrix referencing (as an option?)
 
 ### important things to fix ###
@@ -38,11 +39,14 @@ Things to fix throughout the python code are denoted with `@todo`.
  - [ ] Fix the quality control algorithm in `dtt.py` so that bad data is properly rejected but we don't get stuck in a loop of retaking the data point. Not sure yet what the solution is.
  - [x] Output correct metadata.txt file (e.g. seems to think we're always using the `short delay stage` currently), and output more things (the more information the better)
  - [ ] **Properly** fix weird bug in saving which motor COM port was last used (seems to be due to putting a string into the `last_instance_values.txt`). Currently doesn't save it at all as a hack-fix!
+ - [ ] Fix $\tau$-flip related bug associated with NIR detectors and electronic delay. Not sure what the solution is yet; may be due to hardware, not software...
+ - [ ] Fix sharp features seen using electronic delay at late time delays. As above, could be a hardware thing...
  
 ### nice things to have ###
  - [x] Have *dark correction shots x* in the _Acquisition_ tab as well
  - [ ] Log scaling of kinetic plot
  - [ ] Move the hdf5-conversion tool into a new tab on the main software panel
  - [ ] Put in an option for converting to `.ufs` files in the hdf5-conversion tool
- - [ ] Rough time remaining for an experimental run
+ - [ ] Show rough time remaining for an experimental run
  - [ ] _Random_ and _Bilinear_ stepping order (currently only _Linear_)
+ - [ ] More options for the 'Exponential' time point model (how many points before time zero, initial spacing)
