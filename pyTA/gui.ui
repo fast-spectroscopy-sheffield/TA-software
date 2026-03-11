@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="hardware_tab">
      <attribute name="title">
@@ -749,11 +749,14 @@
        <string>Acquire Options</string>
       </property>
       <widget class="QDoubleSpinBox" name="a_shortstage_t0">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
-         <x>10</x>
-         <y>30</y>
-         <width>71</width>
+         <x>200</x>
+         <y>120</y>
+         <width>41</width>
          <height>22</height>
         </rect>
        </property>
@@ -768,7 +771,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>50</y>
+         <y>70</y>
          <width>71</width>
          <height>22</height>
         </rect>
@@ -797,23 +800,26 @@
        </property>
       </widget>
       <widget class="QLabel" name="label_5">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
-         <x>90</x>
-         <y>30</y>
-         <width>141</width>
+         <x>200</x>
+         <y>100</y>
+         <width>51</width>
          <height>21</height>
         </rect>
        </property>
        <property name="text">
-        <string>Short Stage Time Zero</string>
+        <string>Short t0</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_6">
        <property name="geometry">
         <rect>
          <x>90</x>
-         <y>50</y>
+         <y>70</y>
          <width>141</width>
          <height>21</height>
         </rect>
@@ -867,9 +873,9 @@
       <widget class="QComboBox" name="a_delaytype_dd">
        <property name="geometry">
         <rect>
-         <x>240</x>
+         <x>250</x>
          <y>120</y>
-         <width>91</width>
+         <width>81</width>
          <height>22</height>
         </rect>
        </property>
@@ -877,9 +883,9 @@
       <widget class="QLabel" name="label_9">
        <property name="geometry">
         <rect>
-         <x>240</x>
+         <x>250</x>
          <y>100</y>
-         <width>91</width>
+         <width>81</width>
          <height>21</height>
         </rect>
        </property>
@@ -891,7 +897,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>70</y>
+         <y>50</y>
          <width>71</width>
          <height>22</height>
         </rect>
@@ -907,7 +913,7 @@
        <property name="geometry">
         <rect>
          <x>90</x>
-         <y>70</y>
+         <y>50</y>
          <width>141</width>
          <height>21</height>
         </rect>
@@ -943,6 +949,35 @@
        </property>
        <property name="text">
         <string>Dark Corr. Shots x</string>
+       </property>
+      </widget>
+      <widget class="QDoubleSpinBox" name="a_xpsstage_t0">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>71</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="minimum">
+        <double>-100000.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>100000.000000000000000</double>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_78">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>30</y>
+         <width>131</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>XPS Stage Time Zero</string>
        </property>
       </widget>
      </widget>
@@ -1776,7 +1811,7 @@ background-color: rgb(0, 0, 0);</string>
       <property name="title">
        <string>Acquire Options</string>
       </property>
-      <widget class="QDoubleSpinBox" name="d_shortstage_t0">
+      <widget class="QDoubleSpinBox" name="d_xpsstage_t0">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -1818,7 +1853,7 @@ background-color: rgb(0, 0, 0);</string>
         </rect>
        </property>
        <property name="text">
-        <string>Short Stage Time Zero</string>
+        <string>XPS Stage Time Zero</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_36">
@@ -1837,9 +1872,9 @@ background-color: rgb(0, 0, 0);</string>
       <widget class="QComboBox" name="d_delaytype_dd">
        <property name="geometry">
         <rect>
-         <x>240</x>
+         <x>250</x>
          <y>130</y>
-         <width>91</width>
+         <width>81</width>
          <height>22</height>
         </rect>
        </property>
@@ -1847,7 +1882,7 @@ background-color: rgb(0, 0, 0);</string>
       <widget class="QLabel" name="label_39">
        <property name="geometry">
         <rect>
-         <x>240</x>
+         <x>250</x>
          <y>110</y>
          <width>81</width>
          <height>21</height>
@@ -1978,6 +2013,41 @@ background-color: rgb(0, 0, 0);</string>
        </property>
        <property name="text">
         <string>Dark Corr. Shots x</string>
+       </property>
+      </widget>
+      <widget class="QDoubleSpinBox" name="d_shortstage_t0">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>200</x>
+         <y>130</y>
+         <width>41</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="minimum">
+        <double>-100000.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>100000.000000000000000</double>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_79">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>200</x>
+         <y>110</y>
+         <width>41</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Short t0</string>
        </property>
       </widget>
      </widget>

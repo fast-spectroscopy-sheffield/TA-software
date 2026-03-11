@@ -20,7 +20,7 @@ from sweeps import SweepProcessing
 
 # hardware
 from cameras import StresingCameras, Acquisition
-from delays import PILongStageDelay, PIShortStageDelay, InnolasPinkLaserDelay
+from delays import PILongStageDelay, PIShortStageDelay, InnolasPinkLaserDelay, XPSStageDelay
 
 # motors
 import motormove as mm
@@ -89,10 +89,12 @@ class Application(QtGui.QMainWindow):
         self.ui.a_delaytype_dd.addItem('Pink Laser')
         self.ui.a_delaytype_dd.addItem('Long Stage')
         self.ui.a_delaytype_dd.addItem('Short Stage')
+        self.ui.a_delaytype_dd.addItem('XPS Stage')
         self.ui.a_delaytype_dd.setEnabled(False)
         self.ui.d_delaytype_dd.addItem('Pink Laser')
         self.ui.d_delaytype_dd.addItem('Long Stage')
         self.ui.d_delaytype_dd.addItem('Short Stage')
+        self.ui.d_delaytype_dd.addItem('XPS Stage')
         self.ui.d_delaytype_dd.setEnabled(False)
         self.ui.d_use_ir_gain.setEnabled(False)
         self.ui.d_display_mode_spectra.addItem('Probe')
@@ -107,6 +109,7 @@ class Application(QtGui.QMainWindow):
         self.ui.h_delay_dd.addItem('Pink Laser')
         self.ui.h_delay_dd.addItem('Long Stage')
         self.ui.h_delay_dd.addItem('Short Stage')
+        self.ui.h_delay_dd.addItem('XPS Stage')
         # check COM ports for motor connection
         for comport in serial.tools.list_ports.comports():
             self.comport_list.append(comport.name)
@@ -145,9 +148,11 @@ class Application(QtGui.QMainWindow):
             self.ui.d_calib_pixel_high.setValue(800)
             self.ui.d_calib_wave_low.setValue(400)
             self.ui.d_calib_wave_high.setValue(700)
+            self.ui.a_xpsstage_t0.setValue(0)
             self.ui.a_shortstage_t0.setValue(0)
             self.ui.a_longstage_t0.setValue(0)
             self.ui.a_pinklaser_t0.setValue(0)
+            self.ui.d_xpsstage_t0.setValue(0)
             self.ui.d_shortstage_t0.setValue(0)
             self.ui.d_longstage_t0.setValue(0)
             self.ui.d_pinklaser_t0.setValue(0)
@@ -190,10 +195,12 @@ class Application(QtGui.QMainWindow):
             #     if isinstance(self.last_instance_values[key], str):
             #         if key != 'motor COM':
             #             self.last_instance_values[key] = float(self.last_instance_values[key])
-			# @todo fix the above cf. not saving motor COM number properly
+            # @todo fix the above cf. not saving motor COM number properly
+            self.ui.a_xpsstage_t0.setValue(self.last_instance_values['xps stage time zero'])
             self.ui.a_shortstage_t0.setValue(self.last_instance_values['short stage time zero'])
             self.ui.a_longstage_t0.setValue(self.last_instance_values['long stage time zero'])
             self.ui.a_pinklaser_t0.setValue(self.last_instance_values['pink laser time zero'])
+            self.ui.d_xpsstage_t0.setValue(self.last_instance_values['xps stage time zero'])
             self.ui.d_shortstage_t0.setValue(self.last_instance_values['short stage time zero'])
             self.ui.d_longstage_t0.setValue(self.last_instance_values['long stage time zero'])
             self.ui.d_pinklaser_t0.setValue(self.last_instance_values['pink laser time zero'])
@@ -218,7 +225,7 @@ class Application(QtGui.QMainWindow):
             self.ui.d_jogstep_sb.setValue(self.last_instance_values['d jogstep']) 
             # if self.last_instance_values['motor COM'] in self.comport_list:
                 # self.ui.h_motorCOM_dd.setCurrentIndex(self.ui.h_motorCOM_dd.findText(self.last_instance_values['motor COM']))
-			# @todo fix the above cf. not saving motor COM number properly
+            # @todo fix the above cf. not saving motor COM number properly
             self.ui.coosc_m1_zero.setValue(self.last_instance_values['motor coosc zero 1'])
             self.ui.coosc_m2_zero.setValue(self.last_instance_values['motor coosc zero 2'])
             self.ui.coosc_m1_target1.setValue(self.last_instance_values['motor coosc 1 target 1'])
@@ -248,6 +255,7 @@ class Application(QtGui.QMainWindow):
         self.ui.a_timefile_btn.clicked.connect(self.exec_timefile_folder_btn)
         self.ui.a_timefile_list.currentIndexChanged.connect(self.update_times_from_file)
         # aquisition acquire options
+        self.ui.a_xpsstage_t0.valueChanged.connect(self.update_xpsstage_t0)
         self.ui.a_shortstage_t0.valueChanged.connect(self.update_shortstage_t0)
         self.ui.a_longstage_t0.valueChanged.connect(self.update_longstage_t0)
         self.ui.a_pinklaser_t0.valueChanged.connect(self.update_pinklaser_t0)
@@ -287,6 +295,7 @@ class Application(QtGui.QMainWindow):
         self.ui.d_cutoff_pixel_low.valueChanged.connect(self.update_d_cutoff)
         self.ui.d_cutoff_pixel_high.valueChanged.connect(self.update_d_cutoff)
         # diagnstics aquire options
+        self.ui.d_xpsstage_t0.valueChanged.connect(self.update_d_xpsstage_t0)
         self.ui.d_shortstage_t0.valueChanged.connect(self.update_d_shortstage_t0)
         self.ui.d_longstage_t0.valueChanged.connect(self.update_d_longstage_t0)
         self.ui.d_pinklaser_t0.valueChanged.connect(self.update_d_pinklaser_t0)
@@ -351,6 +360,7 @@ class Application(QtGui.QMainWindow):
         self.update_pinklaser_t0()
         self.update_longstage_t0()
         self.update_shortstage_t0()
+        self.update_xpsstage_t0()
         self.update_calib()
         self.update_cutoff()
         self.update_num_shots()
@@ -381,6 +391,7 @@ class Application(QtGui.QMainWindow):
         self.last_instance_values['calib pixel high'] = self.ui.a_calib_pixel_high.value()
         self.last_instance_values['calib wavelength low'] = self.ui.a_calib_wave_low.value()
         self.last_instance_values['calib wavelength high'] = self.ui.a_calib_wave_high.value()
+        self.last_instance_values['xps stage time zero'] = self.ui.a_xpsstage_t0.value()
         self.last_instance_values['short stage time zero'] = self.ui.a_shortstage_t0.value()
         self.last_instance_values['long stage time zero'] = self.ui.a_longstage_t0.value()
         self.last_instance_values['pink laser time zero'] = self.ui.a_pinklaser_t0.value()
@@ -402,8 +413,8 @@ class Application(QtGui.QMainWindow):
         self.last_instance_values['d threshold value'] = self.ui.d_threshold_value.value()
         self.last_instance_values['d time'] = self.ui.d_time.value()
         self.last_instance_values['d jogstep'] = self.ui.d_jogstep_sb.value()
-		# self.last_instance_values['motor COM'] = self.motor_comport
-		# @todo there is a weird bug here where if you save self.motor_comport, e.g. as 'COM6', all the last_instance_values.txt entries are recognised as strings (I guess because COM# is definitely a string, not a float). Yields a 'ValueError: invalid literal for int() with base 10' when you start pyTA.py. I've hacked a fix by just not saving the last motor COM port (no entry in the last_instance_values.txt) but a better fix is needed - perhaps use numbers to represent COM ports, similar to the delay type?
+        # self.last_instance_values['motor COM'] = self.motor_comport
+        # @todo there is a weird bug here where if you save self.motor_comport, e.g. as 'COM6', all the last_instance_values.txt entries are recognised as strings (I guess because COM# is definitely a string, not a float). Yields a 'ValueError: invalid literal for int() with base 10' when you start pyTA.py. I've hacked a fix by just not saving the last motor COM port (no entry in the last_instance_values.txt) but a better fix is needed - perhaps use numbers to represent COM ports, similar to the delay type?
         self.last_instance_values['motor coosc index 1'] = self.ui.motor_1_index_spin.currentText()
         self.last_instance_values['motor coosc index 2'] = self.ui.motor_2_index_spin.currentText()
         self.last_instance_values['motor coosc zero 1'] = self.ui.coosc_m1_zero.value()
@@ -478,7 +489,10 @@ class Application(QtGui.QMainWindow):
         self.ui.h_connect_delay_btn.setEnabled(False)
         self.ui.h_delay_dd.setEnabled(False)
         self.h_update_delay_status('initialising... please wait')
-        if self.delay_type == 2:  # short stage
+        if self.delay_type == 3:  # XPS stage
+            self.append_history('Connecting to XPS delay stage')
+            self.delay = XPSStageDelay(self.xpsstage_t0)
+        elif self.delay_type == 2:  # short stage
             self.append_history('Connecting to short delay stage')
             self.delay = PIShortStageDelay(self.shortstage_t0)
         elif self.delay_type == 1:  # long stage
@@ -519,13 +533,26 @@ class Application(QtGui.QMainWindow):
         self.delay_type = self.ui.h_delay_dd.currentIndex()
         self.ui.d_delaytype_dd.setCurrentIndex(self.delay_type)
         self.ui.a_delaytype_dd.setCurrentIndex(self.delay_type)
-        if self.delay_type == 2:  # short stage
+        if self.delay_type == 3:  # XPS stage
+            self.ui.a_longstage_t0.setEnabled(False)
+            self.ui.d_longstage_t0.setEnabled(False)
+            self.ui.a_pinklaser_t0.setEnabled(False)
+            self.ui.d_pinklaser_t0.setEnabled(False)
+            self.ui.a_shortstage_t0.setEnabled(False)
+            self.ui.d_shortstage_t0.setEnabled(False)
+            self.ui.a_xpsstage_t0.setEnabled(True)
+            self.ui.d_xpsstage_t0.setEnabled(True)
+            self.timeunits = 'ps'
+            self.update_xlabel_kinetics()
+        elif self.delay_type == 2:  # short stage
             self.ui.a_longstage_t0.setEnabled(False)
             self.ui.d_longstage_t0.setEnabled(False)
             self.ui.a_pinklaser_t0.setEnabled(False)
             self.ui.d_pinklaser_t0.setEnabled(False)
             self.ui.a_shortstage_t0.setEnabled(True)
             self.ui.d_shortstage_t0.setEnabled(True)
+            self.ui.a_xpsstage_t0.setEnabled(False)
+            self.ui.d_xpsstage_t0.setEnabled(False)
             self.timeunits = 'ps'
             self.update_xlabel_kinetics()
         elif self.delay_type == 1:  # long stage
@@ -535,6 +562,8 @@ class Application(QtGui.QMainWindow):
             self.ui.d_pinklaser_t0.setEnabled(False)
             self.ui.a_longstage_t0.setEnabled(True)
             self.ui.d_longstage_t0.setEnabled(True)
+            self.ui.a_xpsstage_t0.setEnabled(False)
+            self.ui.d_xpsstage_t0.setEnabled(False)
             self.timeunits = 'ps'
             self.update_xlabel_kinetics()
         else:  # pink laser
@@ -544,6 +573,8 @@ class Application(QtGui.QMainWindow):
             self.ui.d_shortstage_t0.setEnabled(False)
             self.ui.a_pinklaser_t0.setEnabled(True)
             self.ui.d_pinklaser_t0.setEnabled(True)
+            self.ui.a_xpsstage_t0.setEnabled(False)
+            self.ui.d_xpsstage_t0.setEnabled(False)
             self.timeunits = 'ns'
             self.update_xlabel_kinetics()
         return
@@ -570,17 +601,20 @@ class Application(QtGui.QMainWindow):
     
     def update_metadata(self): # these tell you what options/values were specified in the GUI
         self.metadata['date (yyyy-mm-dd)'] = str(datetime.date.today())
-		# self.metadata['time'] = str(datetime.datetime.now().strftime('%H:%M:%S'))
+        # self.metadata['time'] = str(datetime.datetime.now().strftime('%H:%M:%S'))
         # @todo This time seems to the time a final sweep starts. i.e. if there's 10 sweeps then the time reported is the start of the 10th sweep. Probably there's a way to adjust to the start of the 1st or the end of the 10th.
         self.metadata_changed()
         self.metadata['camera type'] = self.cameratype
-        if self.delay_type == 2:  # as defined in the drop down box in the GUI
+        if self.delay_type == 3:  # as defined in the drop down box in the GUI
+            self.metadata['delay type'] = 'XPS Stage'
+            self.metadata['time zero'] = self.xpsstage_t0
+        elif self.delay_type == 2:
             self.metadata['delay type'] = 'Short Stage'
             self.metadata['time zero'] = self.shortstage_t0
-        if self.delay_type == 1:
+        elif self.delay_type == 1:
             self.metadata['delay type'] = 'Long Stage'
             self.metadata['time zero'] = self.longstage_t0
-        if self.delay_type == 0:
+        elif self.delay_type == 0:
             self.metadata['delay type'] = 'Pink Laser'
             self.metadata['time zero'] = self.pinklaser_t0
         self.metadata['time units'] = self.timeunits
@@ -744,6 +778,24 @@ class Application(QtGui.QMainWindow):
         self.ui.a_pinklaser_t0.setValue(self.pinklaser_t0)
         if self.delay_connected:
             self.delay.t0 = self.pinklaser_t0
+            self.delay.set_max_min_times()
+            self.update_d_time_box_limits()
+        return
+
+    def update_xpsstage_t0(self):
+        self.xpsstage_t0 = self.ui.a_xpsstage_t0.value()
+        self.ui.d_xpsstage_t0.setValue(self.xpsstage_t0)
+        if self.delay_connected:
+            self.delay.t0 = self.xpsstage_t0
+            self.delay.set_max_min_times()
+            self.update_d_time_box_limits()
+        return
+        
+    def update_d_xpsstage_t0(self):
+        self.xpsstage_t0 = self.ui.d_xpsstage_t0.value()
+        self.ui.a_xpsstage_t0.setValue(self.xpsstage_t0)
+        if self.delay_connected:
+            self.delay.t0 = self.xpsstage_t0
             self.delay.set_max_min_times()
             self.update_d_time_box_limits()
         return
@@ -1434,7 +1486,9 @@ class Application(QtGui.QMainWindow):
         return
     
     def exec_d_set_current_btn(self):
-        if self.delay_type == 2:  # short stage
+        if self.delay_type == 3:  # XPS stage
+            self.ui.d_xpsstage_t0.setValue(self.xpsstage_t0-self.d_time)
+        elif self.delay_type == 2:  # short stage
             self.ui.d_shortstage_t0.setValue(self.shortstage_t0-self.d_time)
         elif self.delay_type == 1:  # long stage
             self.ui.d_longstage_t0.setValue(self.longstage_t0-self.d_time)

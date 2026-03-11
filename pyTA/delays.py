@@ -190,3 +190,72 @@ class InnolasPinkLaserDelay:
         if (new_time<-0.001) or (new_time>0.001):
             between_two_shots = False
         return between_two_shots
+
+class XPSStageDelay:
+    '''
+    This has (on 11.03.2026) been duplicated from the class PILongStageDelay
+    Needs modification for Newport's XPS system...
+    Use the package newportxps 2026.1.1
+    '''
+    
+    def __init__(self, t0):
+        self.t0 = t0
+        self.stage = GCSDevice('HYDRA')  # alternatively self.stage = GCSDevice(gcsdll='PI_HydraPollux_GCS2_DLL_x64.dll') for a fail safe option
+        self.stage.ConnectTCPIP(ipaddress='192.168.0.2', ipport=400)
+        self.axis = '1'
+        self.timeout = 5000
+        self.pos_max = 610.0
+        self.pos_min = 0.0
+        self.set_max_min_times()
+        self.stage.VEL(self.axis, 30.0)  # set the velocity to some low value to avoid crashes!
+        pitools.startup(self.stage)
+        
+    def initialise(self):
+        self.stage.FRF(self.axis)  # reference the axis
+        self.wait(self.timeout)
+        self.initialized = True
+    
+    def wait(self, timeout):
+        pitools.waitontarget(self.stage, self.axis, timeout=timeout)
+        return
+
+    def home(self):
+        self.stage.GOH(self.axis)
+        self.wait(self.timeout)
+        return    
+        
+    def move_to(self, time_point_ps):
+        new_pos_mm = self.convert_ps_to_mm(float(self.t0-time_point_ps))
+        self.stage.MOV(self.axis, new_pos_mm)
+        self.wait(self.timeout)
+        return True  # since chopper REF signal is out of phase
+    
+    def convert_ps_to_mm(self, time_ps):
+        pos_mm = 0.299792458*time_ps/2
+        return pos_mm
+    
+    def convert_mm_to_ps(self, pos_mm):
+        time_ps = 2*pos_mm/0.299792458
+        return time_ps
+    
+    def set_max_min_times(self):
+        self.tmax = self.convert_mm_to_ps(self.pos_min)+self.t0
+        self.tmin = -self.convert_mm_to_ps(self.pos_max)+self.t0
+    
+    def close(self):
+        self.stage.CloseConnection()
+        
+    def check_times(self, times):
+        all_on_stage = True
+        for time in times:
+            pos = self.convert_ps_to_mm(float(self.t0-time))
+            if (pos>self.pos_max) or (pos<self.pos_min):
+                all_on_stage = False
+        return all_on_stage
+        
+    def check_time(self, time):
+        on_stage = True
+        pos = self.convert_ps_to_mm(float(self.t0-time))
+        if (pos>self.pos_max) or (pos<self.pos_min):
+            on_stage = False
+        return on_stage
