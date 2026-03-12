@@ -1,6 +1,6 @@
 import pyvisa as visa
 from pipython import GCSDevice, pitools
-
+import newportxps # for Newport XPS control, see https://pypi.org/project/newportxps/0.9/
 
 class PILongStageDelay:
     
@@ -195,7 +195,9 @@ class XPSStageDelay:
     '''
     This has (on 11.03.2026) been duplicated from the class PILongStageDelay
     Needs modification for Newport's XPS system...
-    Use the package newportxps 2026.1.1
+    Use the package newportxps 0.9
+    This version is older (Aug 22, 2024), but compatible with the rest of the current packages
+    See https://pypi.org/project/newportxps/0.9/
     '''
     
     def __init__(self, t0):
