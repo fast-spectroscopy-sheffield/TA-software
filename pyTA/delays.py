@@ -1,6 +1,7 @@
 import pyvisa as visa
 from pipython import GCSDevice, pitools
-import newportxps # for Newport XPS control, see https://pypi.org/project/newportxps/0.9/
+from newportxps import NewportXPS # for Newport XPS control, see https://pypi.org/project/newportxps/0.9/
+import time
 
 class PILongStageDelay:
     
@@ -13,7 +14,8 @@ class PILongStageDelay:
         self.pos_max = 610.0
         self.pos_min = 0.0
         self.set_max_min_times()
-        self.stage.VEL(self.axis, 30.0)  # set the velocity to some low value to avoid crashes!
+        self.stage.VEL(self.axis, 30.0) # set the velocity to some low value to avoid the Servo from switching off (due to 'position errors being too large') and so software crashes
+        # N.B. The max velocity allowed in PIMikroMove for our delay stage is 150.0 mm/s
         pitools.startup(self.stage)
         
     def initialise(self):
@@ -191,73 +193,78 @@ class InnolasPinkLaserDelay:
             between_two_shots = False
         return between_two_shots
 
+
 class XPSStageDelay:
-    '''
-    This has (on 11.03.2026) been duplicated from the class PILongStageDelay
-    Needs modification for Newport's XPS system...
-    Use the package newportxps 0.9
-    This version is older (Aug 22, 2024), but compatible with the rest of the current packages
-    See https://pypi.org/project/newportxps/0.9/
-    '''
-    
-    def __init__(self, t0):
+
+    def __init__(self, t0, ip_address='143.167.40.26'):
         self.t0 = t0
-        self.stage = GCSDevice('HYDRA')  # alternatively self.stage = GCSDevice(gcsdll='PI_HydraPollux_GCS2_DLL_x64.dll') for a fail safe option
-        self.stage.ConnectTCPIP(ipaddress='192.168.0.2', ipport=400)
-        self.axis = '1'
-        self.timeout = 5000
-        self.pos_max = 610.0
-        self.pos_min = 0.0
+        self.stage = NewportXPS(ip_address, username='Administrator', password='Administrator')# Connect to XPS (Default port is 5001, handled by the package)
+        self.axis = 'Group2.Pos'      
+        self.timeout = 10000 # ms
+        self.pos_max = 300.0 # 600.0
+        self.pos_min = -300.0 # 0
+        self.initialized = False
         self.set_max_min_times()
-        self.stage.VEL(self.axis, 30.0)  # set the velocity to some low value to avoid crashes!
-        pitools.startup(self.stage)
-        
+
     def initialise(self):
-        self.stage.FRF(self.axis)  # reference the axis
-        self.wait(self.timeout)
+        """Initializes and references (homes) the stage."""
+        group = self.axis.split('.')[0]# Split the axis to get the group name (XPS initializes by Group)        
+        self.stage.kill_group(group)# Initialize (Kill any previous state and enable power)
+        self.stage.initialize_group(group)
+        self.stage.home_group(group)        
+        self.wait()# Wait for completion
         self.initialized = True
+
+    def wait(self, timeout=None):
+        """Wait until the stage is no longer moving."""
+        t_start = time.time()
+        actual_timeout = (timeout or self.timeout) / 1000.0 # Convert to seconds
+        group_name = self.axis.split('.')[0] 
+        ready_codes = ["Ready state from homing", 
+            "Ready state from motion",
+            "Ready state from tracking",
+            "Ready state from not referenced"]
+        
+        # Loop as long as the current status is NOT in our list of ready codes
+        while self.stage.get_group_status()[group_name] not in ready_codes:
+            if (time.time() - t_start) > actual_timeout:
+                # We include the final status in the error to help with future debugging
+                final_status = self.stage.get_group_status()[group_name]
+                raise TimeoutError(f"Stage timed out after {actual_timeout}s. Final status: {final_status}")
+            
+            time.sleep(0.05)
     
-    def wait(self, timeout):
-        pitools.waitontarget(self.stage, self.axis, timeout=timeout)
+    def home(self):
+        """Move to the home position."""
+        group = self.axis.split('.')[0]
+        self.stage.home_group(group)
+        self.wait()
+
+    def move_to(self, time_point_ps):
+        """Convert ps delay to mm position and move."""
+        new_pos_mm = self.convert_ps_to_mm(float(self.t0 - time_point_ps))
+        self.stage.move_stage(self.axis, new_pos_mm)
+        self.wait()
+        return True
+
+    def convert_ps_to_mm(self, time_ps):       
+        return - 0.299792458 * time_ps / 2 # speed of light ~0.3mm/ps, divided by 2 for round-trip delay. Also, minus sign needed for the right direction
+
+    def convert_mm_to_ps(self, pos_mm):
+        return - 2 * pos_mm / 0.299792458 # minus sign needed for the right direction
+
+    def set_max_min_times(self):
+        self.tmax = - self.convert_mm_to_ps(self.pos_max) + self.t0
+        # print('tmax='+str(self.tmax))
+        self.tmin = - self.convert_mm_to_ps(self.pos_min) + self.t0
+        # print('tmin='+str(self.tmin))
+
+    def close(self):
         return
 
-    def home(self):
-        self.stage.GOH(self.axis)
-        self.wait(self.timeout)
-        return    
-        
-    def move_to(self, time_point_ps):
-        new_pos_mm = self.convert_ps_to_mm(float(self.t0-time_point_ps))
-        self.stage.MOV(self.axis, new_pos_mm)
-        self.wait(self.timeout)
-        return True  # since chopper REF signal is out of phase
-    
-    def convert_ps_to_mm(self, time_ps):
-        pos_mm = 0.299792458*time_ps/2
-        return pos_mm
-    
-    def convert_mm_to_ps(self, pos_mm):
-        time_ps = 2*pos_mm/0.299792458
-        return time_ps
-    
-    def set_max_min_times(self):
-        self.tmax = self.convert_mm_to_ps(self.pos_min)+self.t0
-        self.tmin = -self.convert_mm_to_ps(self.pos_max)+self.t0
-    
-    def close(self):
-        self.stage.CloseConnection()
-        
     def check_times(self, times):
-        all_on_stage = True
-        for time in times:
-            pos = self.convert_ps_to_mm(float(self.t0-time))
-            if (pos>self.pos_max) or (pos<self.pos_min):
-                all_on_stage = False
-        return all_on_stage
-        
-    def check_time(self, time):
-        on_stage = True
-        pos = self.convert_ps_to_mm(float(self.t0-time))
-        if (pos>self.pos_max) or (pos<self.pos_min):
-            on_stage = False
-        return on_stage
+        return all(self.check_time(t) for t in times)
+
+    def check_time(self, time_val):
+        pos = self.convert_ps_to_mm(float(self.t0 - time_val))
+        return self.pos_min <= pos <= self.pos_max
