@@ -472,8 +472,9 @@ class Application(QtGui.QMainWindow):
     def update_cameratype(self):
         self.cameratype = self.ui.h_camera_dd.currentText()
         if self.cameratype == 'NIR':
-            self.ui.d_use_linear_corr.setChecked(True)
             self.ui.d_use_linear_corr.setEnabled(True)
+            self.ui.d_use_linear_corr.setChecked(False)
+            # Enabled before Checked... lead to issues if Check before Enabled ('ghost tick')
             self.ui.d_set_linear_corr_btn.setEnabled(True)
             self.use_ir_gain = True if self.ui.h_use_ir_gain.isChecked() else False
             self.num_pixels = 512
@@ -938,7 +939,7 @@ class Application(QtGui.QMainWindow):
             self.append_history('Successfully set linear pixel correction')
             print(self.linear_corr)
         except:
-            self.append_history('Error setting linear pixel correction, line~774')
+            self.append_history('Error setting linear pixel correction, line~941')
         return
         
     def append_history(self, message):
@@ -1285,7 +1286,7 @@ class Application(QtGui.QMainWindow):
             try:
                 self.current_data.linear_pixel_correlation(self.linear_corr)
             except:
-                self.append_history('Error using linear pixel correction, line~1075')
+                self.append_history('Error using linear pixel correction, line~1288')
         self.high_trig_std = self.current_data.separate_on_off(self.threshold, self.tau_flip_request)
         if self.ui.a_test_run_btn.isChecked() is False:
             self.current_data.sub_bgd(self.bgd)
@@ -1347,7 +1348,7 @@ class Application(QtGui.QMainWindow):
             try:
                 self.bgd.linear_pixel_correlation(self.linear_corr)
             except:
-                self.append_history('Error using linear pixel correction, line~1137')
+                self.append_history('Error using linear pixel correction, line~1350')
         self.bgd.separate_on_off(self.threshold)
         self.bgd.average_shots() 
         self.run()          
@@ -1520,7 +1521,7 @@ class Application(QtGui.QMainWindow):
             try:
                 self.current_data.linear_pixel_correlation(self.linear_corr)
             except:
-                self.append_history('Error using linear pixel correction, line~1308')
+                self.append_history('Error using linear pixel correction, line~1523')
         self.current_data.separate_on_off(self.threshold,self.tau_flip_request)
         if self.ui.a_test_run_btn.isChecked() is False:
             self.current_data.sub_bgd(self.bgd)
@@ -1564,7 +1565,7 @@ class Application(QtGui.QMainWindow):
             try:
                 self.bgd.linear_pixel_correlation(self.linear_corr)
             except:
-                self.append_history('Error using linear pixel correction, line~1352')
+                self.append_history('Error using linear pixel correction, line~1567')
         self.bgd.separate_on_off(self.threshold)
         self.bgd.average_shots()
         self.d_run()          
