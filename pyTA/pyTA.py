@@ -96,7 +96,7 @@ class Application(QtGui.QMainWindow):
         self.ui.d_delaytype_dd.addItem('Short Stage')
         self.ui.d_delaytype_dd.addItem('XPS Stage')
         self.ui.d_delaytype_dd.setEnabled(False)
-        self.ui.d_use_ir_gain.setEnabled(False)
+        # self.ui.d_use_ir_gain.setEnabled(False) # UI element not functional, so removed
         self.ui.d_display_mode_spectra.addItem('Probe')
         self.ui.d_display_mode_spectra.addItem('Reference')
         self.ui.a_distribution_dd.addItem('Exponential')
@@ -430,12 +430,17 @@ class Application(QtGui.QMainWindow):
         self.last_instance_values.to_csv(self.last_instance_filename, sep=':', header=False)
         
     def exec_h_camera_connect_btn(self):
+        # @todo The ordering here is wrong somewhere for NIR camera connection with IR gain.
+        # Currently have to first tick the 'IR gain' box in the hardware tab...
+        # ...then select 'NIR' in the dropdown menu to use IR gain.
+        # Doing it in a different order currently doesn't work.
         self.ui.h_connect_camera_btn.setEnabled(False)
         self.ui.h_camera_dd.setEnabled(False)
         self.h_update_camera_status('initialising... please wait')
         self.camera = StresingCameras(self.cameratype, self.use_ir_gain)
         self.camera.initialise()
         self.h_update_camera_status('ready')
+        self.append_history(self.cameratype+' camera connected, IR gain is '+str(bool(self.use_ir_gain)))
         self.ui.h_disconnect_camera_btn.setEnabled(True)
         self.camera_connected = True
         self.safe_to_exit = False
@@ -451,6 +456,7 @@ class Application(QtGui.QMainWindow):
         self.ui.h_disconnect_camera_btn.setEnabled(False)
         self.camera.close()
         self.h_update_camera_status('ready to connect')
+        self.append_history(self.cameratype+' camera disconnected, IR gain was '+str(bool(self.use_ir_gain)))
         self.ui.h_connect_camera_btn.setEnabled(True)
         self.ui.h_camera_dd.setEnabled(True)
         self.camera_connected = False
@@ -466,7 +472,7 @@ class Application(QtGui.QMainWindow):
     
     def update_use_ir_gain(self):
         self.use_ir_gain = self.ui.h_use_ir_gain.isChecked()
-        self.ui.d_use_ir_gain.setChecked(self.use_ir_gain)
+        # self.ui.d_use_ir_gain.setChecked(self.use_ir_gain) # UI element not functional, so removed
         return
     
     def update_cameratype(self):
@@ -604,6 +610,7 @@ class Application(QtGui.QMainWindow):
         self.metadata['date (yyyy-mm-dd)'] = str(datetime.date.today())
         # self.metadata['time'] = str(datetime.datetime.now().strftime('%H:%M:%S'))
         # @todo This time seems to the time a final sweep starts. i.e. if there's 10 sweeps then the time reported is the start of the 10th sweep. Probably there's a way to adjust to the start of the 1st or the end of the 10th.
+        # @todo Log if IR gain was used or not. I don't want to break the code the day before a collaborator visits, so later...!
         self.metadata_changed()
         self.metadata['camera type'] = self.cameratype
         if self.delay_type == 3:  # as defined in the drop down box in the GUI

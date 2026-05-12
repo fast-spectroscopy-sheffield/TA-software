@@ -35,8 +35,8 @@
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>321</width>
-        <height>121</height>
+        <width>251</width>
+        <height>171</height>
        </rect>
       </property>
       <property name="title">
@@ -46,7 +46,7 @@
        <property name="geometry">
         <rect>
          <x>130</x>
-         <y>30</y>
+         <y>70</y>
          <width>111</width>
          <height>23</height>
         </rect>
@@ -56,7 +56,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>30</y>
+         <y>70</y>
          <width>111</width>
          <height>21</height>
         </rect>
@@ -69,7 +69,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>60</y>
+         <y>100</y>
          <width>111</width>
          <height>23</height>
         </rect>
@@ -85,7 +85,7 @@
        <property name="geometry">
         <rect>
          <x>130</x>
-         <y>60</y>
+         <y>100</y>
          <width>111</width>
          <height>23</height>
         </rect>
@@ -98,7 +98,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>90</y>
+         <y>130</y>
          <width>231</width>
          <height>21</height>
         </rect>
@@ -116,7 +116,7 @@
       <widget class="QCheckBox" name="h_use_ir_gain">
        <property name="geometry">
         <rect>
-         <x>250</x>
+         <x>10</x>
          <y>30</y>
          <width>71</width>
          <height>21</height>
@@ -126,14 +126,40 @@
         <string>IR Gain</string>
        </property>
       </widget>
+      <widget class="QLabel" name="label_80">
+       <property name="geometry">
+        <rect>
+         <x>70</x>
+         <y>30</y>
+         <width>161</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&amp;lt; &lt;span style=&quot; font-weight:600;&quot;&gt;Bug!&lt;/span&gt; Tick before selecting NIR&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_81">
+       <property name="geometry">
+        <rect>
+         <x>80</x>
+         <y>50</y>
+         <width>161</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;in dropdown, and check Log.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </widget>
      <widget class="QGroupBox" name="h_delay_box">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>140</y>
+        <y>190</y>
         <width>251</width>
-        <height>121</height>
+        <height>131</height>
        </rect>
       </property>
       <property name="title">
@@ -215,7 +241,7 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>270</y>
+        <y>330</y>
         <width>251</width>
         <height>161</height>
        </rect>
@@ -1942,19 +1968,6 @@ background-color: rgb(0, 0, 0);</string>
        </property>
        <property name="text">
         <string>Spectrum Type</string>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="d_use_ir_gain">
-       <property name="geometry">
-        <rect>
-         <x>260</x>
-         <y>30</y>
-         <width>71</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>IR Gain</string>
        </property>
       </widget>
       <widget class="QDoubleSpinBox" name="d_pinklaser_t0">
