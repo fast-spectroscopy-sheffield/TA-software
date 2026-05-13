@@ -9,7 +9,7 @@ _Thanks to the OE group at Cambridge for some of the original code._
 ### hdf5-converter ###
 Conversion of data files (.hdf5) to useful things.
 
-### usage ###
+## usage ##
 Open an anaconda command prompt and `cd` to the TA-software folder. Then activate the environment and launch the software by running:
 ```bat
 conda activate pyTA
@@ -24,9 +24,17 @@ python hdf5-converter.py
 ```
 When finished run `conda deactivate`.
 
-### development ###
+## development ##
 
 Things to fix throughout the python code are denoted with `@todo`.
+
+To update the GUI, make changes to `gui.ui` with Qt Designer (`designer.exe`), save, and then run the updater script:
+```bat
+conda activate pyTA
+cd pyTA
+python gui_update.py
+```
+which will update `gui.py`.
 
 ### key things to implement ###
 
@@ -36,9 +44,10 @@ Things to fix throughout the python code are denoted with `@todo`.
 
 ### important things to fix ###
 
- - [ ] Fix the quality control algorithm in `dtt.py` so that bad data is properly rejected but we don't get stuck in a loop of retaking the data point. Not sure yet what the solution is.
+ - [ ] Fix the quality control algorithm in `dtt.py` so that bad data is properly rejected but we don't get stuck in a loop of retaking the data point. Not sure yet what the solution is
  - [x] Output correct metadata.txt file (e.g. seems to think we're always using the `short delay stage` currently), and output more things (the more information the better)
- - [ ] **Properly** fix weird bug in saving which motor COM port was last used (seems to be due to putting a string into the `last_instance_values.txt`). Currently doesn't save it at all as a hack-fix!
+ - [ ] **Properly** fix weird bug in saving which motor COM port was last used (seems to be due to putting a string into the `last_instance_values.txt`; may have to fix using 'pickle'). Currently doesn't save it at all as a hack-fix!
+ - [ ] Fix the IR gain selection bug. Currently, to use IR gain with the NIR detectors (recommended), you must **first** tick the 'IR gain' box in the hardware tab, **then** select 'NIR' in the dropdown menu. For now, check the log/history to see if you've done it correctly
  - [ ] Fix $\tau$-flip related bug associated with NIR detectors and electronic delay. Not sure what the solution is yet; may be due to hardware, not software...
  - [ ] Fix sharp features seen using electronic delay at late time delays. As above, could be a hardware thing...
  
@@ -46,7 +55,11 @@ Things to fix throughout the python code are denoted with `@todo`.
  - [x] Have *dark correction shots x* in the _Acquisition_ tab as well
  - [ ] Log scaling of kinetic plot
  - [ ] Move the hdf5-conversion tool into a new tab on the main software panel
- - [ ] Put in an option for converting to `.ufs` files in the hdf5-conversion tool
+ - [ ] Put in an option for converting to `.ufs` files in the hdf5-conversion tool (aside: check they open properly in recent versions of the associated software)
  - [ ] Show rough time remaining for an experimental run
  - [ ] _Random_ and _Bilinear_ stepping order (currently only _Linear_)
  - [ ] More options for the 'Exponential' time point model (how many points before time zero, initial spacing)
+ - [ ] Remove the 'Log' (notetaking) tab, as it lacks functionality and it's often confused with the other, more useful logs/histories
+ - [ ] Option for saving the useful logs/histories to a .txt file?
+ - [ ] Virtual or mock mode (of the whole software, or individual parts – detector, delays, ...), which may enable troubleshooting without the prescence of hardware
+ - [ ] Option for $\Delta A$ view in the software, in addition to the current $\Delta T/T$ (...though maybe the logarithm required is computationally expensive?)
