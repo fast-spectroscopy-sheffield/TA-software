@@ -868,12 +868,6 @@ class Ui_pyTAgui(object):
         self.motor_log.setGeometry(QtCore.QRect(10, 20, 201, 701))
         self.motor_log.setObjectName("motor_log")
         self.tabs.addTab(self.motor_tab, "")
-        self.log_tab = QtWidgets.QWidget()
-        self.log_tab.setObjectName("log_tab")
-        self.log = QtWidgets.QPlainTextEdit(self.log_tab)
-        self.log.setGeometry(QtCore.QRect(10, 10, 1761, 791))
-        self.log.setObjectName("log")
-        self.tabs.addTab(self.log_tab, "")
         pyTAgui.setCentralWidget(self.centralWidget)
         self.statusBar = QtWidgets.QStatusBar(pyTAgui)
         self.statusBar.setObjectName("statusBar")
@@ -1034,8 +1028,7 @@ class Ui_pyTAgui(object):
         self.label_29.setText(_translate("pyTAgui", "Motor 2 index"))
         self.label_59.setText(_translate("pyTAgui", "Delay"))
         self.label_62.setText(_translate("pyTAgui", "Current time"))
-        self.motor_log_box.setTitle(_translate("pyTAgui", "Log"))
+        self.motor_log_box.setTitle(_translate("pyTAgui", "Motor Log"))
         self.tabs.setTabText(self.tabs.indexOf(self.motor_tab), _translate("pyTAgui", "Crystal Stage Motors"))
-        self.tabs.setTabText(self.tabs.indexOf(self.log_tab), _translate("pyTAgui", "Log"))
 
 from pyqtgraph import ImageView, PlotWidget

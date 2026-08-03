@@ -3209,7 +3209,7 @@ background-color: rgb(255, 255, 255);</string>
        </rect>
       </property>
       <property name="title">
-       <string>Log</string>
+       <string>Motor Log</string>
       </property>
       <widget class="QPlainTextEdit" name="motor_log">
        <property name="geometry">
@@ -3221,21 +3221,6 @@ background-color: rgb(255, 255, 255);</string>
         </rect>
        </property>
       </widget>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="log_tab">
-     <attribute name="title">
-      <string>Log</string>
-     </attribute>
-     <widget class="QPlainTextEdit" name="log">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>1761</width>
-        <height>791</height>
-       </rect>
-      </property>
      </widget>
     </widget>
    </widget>
