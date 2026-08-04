@@ -1,6 +1,6 @@
 use cutoff:1.0
-cutoff pixel low:157.0
-cutoff pixel high:468.0
+cutoff pixel low:224.0
+cutoff pixel high:470.0
 use calib:1.0
 calib pixel low:408.0
 calib pixel high:446.0
@@ -9,14 +9,14 @@ calib wavelength high:850.0
 xps stage time zero:1460.7
 short stage time zero:0.0
 long stage time zero:3770.7
-pink laser time zero:2596.7
+pink laser time zero:2600.3
 delay type:0.0
 distribution:0.0
-tstart:-1.0
-tend:75.0
-num tpoints:40.0
-num shots:200.0
-num sweeps:1.0
+tstart:-10.0
+tend:1000000.0
+num tpoints:200.0
+num shots:500.0
+num sweeps:2.0
 d use ref manip:1.0
 d display mode spectra:0.0
 d refman horizontal offset:-5.5
@@ -26,9 +26,9 @@ d refman vertical offset:0.0
 d refman vertical stretch:1.0
 d threshold pixel:1.0
 d threshold value:20000.0
-d time:1.0
-d jogstep:0.1
-dark correction shot factor:1
+d time:2900.0
+d jogstep:500.0
+dark correction shot factor:5
 motor coosc index 1:
 motor coosc index 2:
 motor coosc zero 1:5.5

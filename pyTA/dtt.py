@@ -50,7 +50,8 @@ class DataProcessing:
         self.trigger = np.array(self.trigger)
         if np.abs(self.trigger-self.trigger.mean()).std() > 20:
             print('high std '+str(datetime.datetime.now()))
-            #high_std = True
+            #high_std = True #@todo what is the original function of this, and why was it commented out?
+            # Presumably it should re-attempt to take data if the triggering goes wrong for a moment.
         if tau_flip_request is True:
             self.trigger = np.roll(self.trigger, 1)
         if (self.untrimmed_probe_array[0, pixel] >= thresh_value and not tau_flip_request) or (self.untrimmed_probe_array[0, pixel] < thresh_value and tau_flip_request):
@@ -63,6 +64,16 @@ class DataProcessing:
             self.probe_off_array = self.probe_array[::2,:]
             self.reference_on_array = self.reference_array[1::2,:]
             self.reference_off_array = self.reference_array[::2,:]
+        #Following for troubleshooting:
+        '''
+        print('[ length of probe_on_array = '+str(len(self.probe_on_array)))
+        print('  length of probe_off_array = '+str(len(self.probe_off_array)))
+        print('  length of reference_on_array = '+str(len(self.reference_on_array)))
+        print('  length of reference_off_array = '+str(len(self.reference_off_array)))
+        print('  length of self.untrimmed_probe_array = '+str(len(self.untrimmed_probe_array)))
+        print('  untrimmed_probe_array[0] = '+str(self.untrimmed_probe_array[0][0:500]))
+        print('  length of  untrimmed_probe_array[0] = '+str(len(self.untrimmed_probe_array[0])))
+        '''
         return high_std
         
     def average_shots(self):
@@ -72,11 +83,17 @@ class DataProcessing:
         self.reference_off = self.reference_off_array.mean(axis=0)
         return
         
-    def sub_bgd(self, bgd):
-        self.probe_on_array = self.probe_on_array - bgd.probe_on
-        self.probe_off_array = self.probe_off_array - bgd.probe_off
-        self.reference_on_array = self.reference_on_array - bgd.reference_on
-        self.reference_off_array = self.reference_off_array - bgd.reference_off
+    def sub_bgd(self, bgd, tau_flip_request=False):
+        if tau_flip_request is False:
+            self.probe_on_array = self.probe_on_array - bgd.probe_on
+            self.probe_off_array = self.probe_off_array - bgd.probe_off
+            self.reference_on_array = self.reference_on_array - bgd.reference_on
+            self.reference_off_array = self.reference_off_array - bgd.reference_off
+        else: # @todo test this new (2026-08-04) 'else' statement in the lab. Does threshold also need to be considered?
+            self.probe_on_array = self.probe_on_array - bgd.probe_off
+            self.probe_off_array = self.probe_off_array - bgd.probe_on
+            self.reference_on_array = self.reference_on_array - bgd.reference_off
+            self.reference_off_array = self.reference_off_array - bgd.reference_on
         return
         
     def manipulate_reference(self, refman):

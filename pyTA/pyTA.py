@@ -1144,7 +1144,7 @@ class Application(QtGui.QMainWindow):
         msg = QtGui.QMessageBox()
         msg.setIcon(QtGui.QMessageBox.Information)
         msg.setText("Block Probe and Reference")
-        msg.setInformativeText("Just press once (be patient)")
+        msg.setInformativeText("Block Pump too (watch out for tau-flip bugs)\n\nJust press OK once (be patient)")
         msg.setStandardButtons(QtGui.QMessageBox.Ok)
         retval = msg.exec_()
         return retval
@@ -1152,8 +1152,8 @@ class Application(QtGui.QMainWindow):
     def message_unblock(self):
         msg = QtGui.QMessageBox()
         msg.setIcon(QtGui.QMessageBox.Information)
-        msg.setText("Unblock Probe and Reference")
-        msg.setInformativeText("Just press once (be patient)")
+        msg.setText("Block Probe and Reference")
+        msg.setInformativeText("Block Pump too (watch out for tau-flip bugs)\n\nJust press OK once (be patient)")
         msg.setStandardButtons(QtGui.QMessageBox.Ok)
         retval = msg.exec_()
         return retval
@@ -1296,7 +1296,7 @@ class Application(QtGui.QMainWindow):
                 self.append_history('Error using linear pixel correction, line~1288')
         self.high_trig_std = self.current_data.separate_on_off(self.threshold, self.tau_flip_request)
         if self.ui.a_test_run_btn.isChecked() is False:
-            self.current_data.sub_bgd(self.bgd)
+            self.current_data.sub_bgd(self.bgd,self.tau_flip_request)
         if self.ui.d_use_ref_manip.isChecked() is True:
             self.current_data.manipulate_reference(self.refman)
         self.current_data.average_shots()
@@ -1531,7 +1531,7 @@ class Application(QtGui.QMainWindow):
                 self.append_history('Error using linear pixel correction, line~1523')
         self.current_data.separate_on_off(self.threshold,self.tau_flip_request)
         if self.ui.a_test_run_btn.isChecked() is False:
-            self.current_data.sub_bgd(self.bgd)
+            self.current_data.sub_bgd(self.bgd,self.tau_flip_request)
         if self.ui.d_use_ref_manip.isChecked() is True:
             self.current_data.manipulate_reference(self.refman)
         self.current_data.average_shots()

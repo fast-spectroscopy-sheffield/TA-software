@@ -39,7 +39,7 @@ which will update `gui.py`.
 ### key things to implement ###
 
  - [x] Set up and test NIR detectors for sub-ps TA
- - [ ] Set up and test NIR detectors for nsTA - current have a $\tau$ flip-related bug, among other issues
+ - [x] Set up and test NIR detectors for nsTA
  - [ ] B-matrix referencing (as an option?)
 
 ### important things to fix ###
@@ -48,8 +48,8 @@ which will update `gui.py`.
  - [x] Output correct metadata.txt file (e.g. seems to think we're always using the `short delay stage` currently), and output more things (the more information the better)
  - [ ] **Properly** fix weird bug in saving which motor COM port was last used (seems to be due to putting a string into the `last_instance_values.txt`; may have to fix using 'pickle'). Currently doesn't save it at all as a hack-fix!
  - [ ] Fix the IR gain selection bug. Currently, to use IR gain with the NIR detectors (recommended), you must **first** tick the 'IR gain' box in the hardware tab, **then** select 'NIR' in the dropdown menu. For now, check the log/history to see if you've done it correctly
- - [ ] Fix $\tau$-flip related bug associated with NIR detectors and electronic delay. Not sure what the solution is yet; may be due to hardware, not software...
- - [ ] Fix sharp features seen using electronic delay at late time delays. As above, could be a hardware thing...
+ - [x] (?) Fix $\tau$-flip bugs associated with the electronic delay. We think the artefacts arised from the `sub_bgd` function in `dtt.py` and the way the arrays get reordered post-$\tau$ (note the background is always taken pre-$\tau$, so the background is now 'flipped' before subtraction in post-$\tau$). This 'fix' was made on 04-08-2026, but it needs testing in the lab with a sample demonstrating these artefacts strongly (e.g. strong background fluorescence)
+ - [ ] Fix sharp features seen using electronic delay at late time delays. Could be a hardware thing...
  
 ### nice things to have ###
  - [x] Have *dark correction shots x* in the _Acquisition_ tab as well
