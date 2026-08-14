@@ -1144,7 +1144,7 @@ class Application(QtGui.QMainWindow):
         msg = QtGui.QMessageBox()
         msg.setIcon(QtGui.QMessageBox.Information)
         msg.setText("Block Probe and Reference")
-        msg.setInformativeText("Block Pump too (watch out for tau-flip bugs)\n\nJust press OK once (be patient)")
+        msg.setInformativeText("Block Pump too (watch\nout for tau-flip bugs)\n\nJust press OK once (be patient)")
         msg.setStandardButtons(QtGui.QMessageBox.Ok)
         retval = msg.exec_()
         return retval
@@ -1152,8 +1152,8 @@ class Application(QtGui.QMainWindow):
     def message_unblock(self):
         msg = QtGui.QMessageBox()
         msg.setIcon(QtGui.QMessageBox.Information)
-        msg.setText("Block Probe and Reference")
-        msg.setInformativeText("Block Pump too (watch out for tau-flip bugs)\n\nJust press OK once (be patient)")
+        msg.setText("Un-block Probe, Reference,\nand Pump")
+        msg.setInformativeText("\nJust press OK once (be patient)\n")
         msg.setStandardButtons(QtGui.QMessageBox.Ok)
         retval = msg.exec_()
         return retval

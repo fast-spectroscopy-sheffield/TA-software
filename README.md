@@ -55,11 +55,11 @@ which will update `gui.py`.
  - [x] Have *dark correction shots x* in the _Acquisition_ tab as well
  - [ ] Log scaling of kinetic plot
  - [ ] Move the hdf5-conversion tool into a new tab on the main software panel
- - [ ] Put in an option for converting to `.ufs` files in the hdf5-conversion tool (aside: check they open properly in recent versions of the associated software)
+ - [ ] Put in an option for converting to `.ufs` files in the hdf5-conversion tool (note, these open fine in the August 2026 version (4.5.14) of the associated software)
  - [ ] Show rough time remaining for an experimental run
  - [ ] _Random_ and _Bilinear_ stepping order (currently only _Linear_)
  - [ ] More options for the 'Exponential' time point model (how many points before time zero, initial spacing)
- - [ ] Remove the 'Log' (notetaking) tab, as it lacks functionality and it's often confused with the other, more useful logs/histories
+ - [x] Remove the 'Log' (notetaking) tab, as it lacks functionality and it's often confused with the other, more useful logs/histories
  - [ ] Option for saving the useful logs/histories to a .txt file?
  - [ ] Virtual or mock mode (of the whole software, or individual parts – detector, delays, ...), which may enable troubleshooting without the prescence of hardware
  - [ ] Option for $\Delta A$ view in the software, in addition to the current $\Delta T/T$ (...though maybe the logarithm required is computationally expensive?)
