@@ -430,12 +430,10 @@ class Application(QtGui.QMainWindow):
         self.last_instance_values.to_csv(self.last_instance_filename, sep=':', header=False)
         
     def exec_h_camera_connect_btn(self):
-        # @todo The ordering here is wrong somewhere for NIR camera connection with IR gain.
-        # Currently have to first tick the 'IR gain' box in the hardware tab...
-        # ...then select 'NIR' in the dropdown menu to use IR gain.
-        # Doing it in a different order currently doesn't work.
         self.ui.h_connect_camera_btn.setEnabled(False)
         self.ui.h_camera_dd.setEnabled(False)
+        self.update_use_ir_gain() # see if the IR gain box is checked
+        self.ui.h_use_ir_gain.setEnabled(False) # this must go after the previous line
         self.h_update_camera_status('initialising... please wait')
         self.camera = StresingCameras(self.cameratype, self.use_ir_gain)
         self.camera.initialise()
@@ -459,6 +457,7 @@ class Application(QtGui.QMainWindow):
         self.append_history(self.cameratype+' camera disconnected, IR gain was '+str(bool(self.use_ir_gain)))
         self.ui.h_connect_camera_btn.setEnabled(True)
         self.ui.h_camera_dd.setEnabled(True)
+        self.update_cameratype()
         self.camera_connected = False
         if not self.delay_connected and not self.motor_connected:
             self.safe_to_exit = True
@@ -471,7 +470,10 @@ class Application(QtGui.QMainWindow):
         return
     
     def update_use_ir_gain(self):
-        self.use_ir_gain = self.ui.h_use_ir_gain.isChecked()
+        if self.ui.h_use_ir_gain.isEnabled(): # If enabled for NIR cameras
+            self.use_ir_gain = self.ui.h_use_ir_gain.isChecked()
+        else: # If disabled when using visible cameras, which don't have a gain function
+            self.use_ir_gain = False
         # self.ui.d_use_ir_gain.setChecked(self.use_ir_gain) # UI element not functional, so removed
         return
     
@@ -481,12 +483,14 @@ class Application(QtGui.QMainWindow):
             self.ui.d_use_linear_corr.setEnabled(True)
             self.ui.d_use_linear_corr.setChecked(False)
             # Enabled before Checked... lead to issues if Check before Enabled ('ghost tick')
+            self.ui.h_use_ir_gain.setEnabled(True)
             self.ui.d_set_linear_corr_btn.setEnabled(True)
-            self.use_ir_gain = True if self.ui.h_use_ir_gain.isChecked() else False
             self.num_pixels = 512
         else:
             self.ui.d_use_linear_corr.setChecked(False)
             self.ui.d_use_linear_corr.setEnabled(False)
+            self.ui.h_use_ir_gain.setChecked(False)
+            self.ui.h_use_ir_gain.setEnabled(False)
             self.ui.d_set_linear_corr_btn.setEnabled(False)
             self.use_ir_gain = False
             self.num_pixels = 1024

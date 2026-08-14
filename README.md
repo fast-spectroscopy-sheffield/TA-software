@@ -47,7 +47,7 @@ which will update `gui.py`.
  - [ ] Fix the quality control algorithm in `dtt.py` so that bad data is properly rejected but we don't get stuck in a loop of retaking the data point. Not sure yet what the solution is
  - [x] Output correct metadata.txt file (e.g. seems to think we're always using the `short delay stage` currently), and output more things (the more information the better)
  - [ ] **Properly** fix weird bug in saving which motor COM port was last used (seems to be due to putting a string into the `last_instance_values.txt`; may have to fix using 'pickle'). Currently doesn't save it at all as a hack-fix!
- - [ ] Fix the IR gain selection bug. Currently, to use IR gain with the NIR detectors (recommended), you must **first** tick the 'IR gain' box in the hardware tab, **then** select 'NIR' in the dropdown menu. For now, check the log/history to see if you've done it correctly
+ - [x] Fix the IR gain selection bug. Before August 2026, to use IR gain with the NIR detectors (recommended), you must **first** tick the 'IR gain' box in the hardware tab, **then** select 'NIR' in the dropdown menu. The log/history reports if it's been done correctly
  - [x] (?) Fix $\tau$-flip bugs associated with the electronic delay. We think the artefacts arised from the `sub_bgd` function in `dtt.py` and the way the arrays get reordered post-$\tau$ (note the background is always taken pre-$\tau$, so the background is now 'flipped' before subtraction in post-$\tau$). This 'fix' was made on 04-08-2026, but it needs testing in the lab with a sample demonstrating these artefacts strongly (e.g. strong background fluorescence)
  - [ ] Fix sharp features seen using electronic delay at late time delays. Could be a hardware thing...
  

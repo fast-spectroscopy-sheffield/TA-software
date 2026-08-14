@@ -36,7 +36,7 @@
         <x>10</x>
         <y>10</y>
         <width>251</width>
-        <height>171</height>
+        <height>161</height>
        </rect>
       </property>
       <property name="title">
@@ -46,7 +46,7 @@
        <property name="geometry">
         <rect>
          <x>130</x>
-         <y>70</y>
+         <y>30</y>
          <width>111</width>
          <height>23</height>
         </rect>
@@ -56,7 +56,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>70</y>
+         <y>30</y>
          <width>111</width>
          <height>21</height>
         </rect>
@@ -69,7 +69,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>100</y>
+         <y>90</y>
          <width>111</width>
          <height>23</height>
         </rect>
@@ -85,7 +85,7 @@
        <property name="geometry">
         <rect>
          <x>130</x>
-         <y>100</y>
+         <y>90</y>
          <width>111</width>
          <height>23</height>
         </rect>
@@ -98,7 +98,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>130</y>
+         <y>120</y>
          <width>231</width>
          <height>21</height>
         </rect>
@@ -117,39 +117,13 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>30</y>
-         <width>71</width>
+         <y>60</y>
+         <width>221</width>
          <height>21</height>
         </rect>
        </property>
        <property name="text">
-        <string>IR Gain</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_80">
-       <property name="geometry">
-        <rect>
-         <x>70</x>
-         <y>30</y>
-         <width>161</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&amp;lt; &lt;span style=&quot; font-weight:600;&quot;&gt;Bug!&lt;/span&gt; Tick before selecting NIR&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_81">
-       <property name="geometry">
-        <rect>
-         <x>80</x>
-         <y>50</y>
-         <width>161</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;in dropdown, and check Log.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>IR Gain (recommended for NIR cameras)</string>
        </property>
       </widget>
      </widget>
@@ -157,7 +131,7 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>190</y>
+        <y>180</y>
         <width>251</width>
         <height>131</height>
        </rect>
@@ -241,7 +215,7 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>330</y>
+        <y>320</y>
         <width>251</width>
         <height>161</height>
        </rect>
