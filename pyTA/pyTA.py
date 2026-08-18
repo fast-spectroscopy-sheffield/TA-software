@@ -959,21 +959,27 @@ class Application(QtGui.QMainWindow):
         return
                        
     def create_plots(self):
+        self.zero_line = pg.InfiniteLine(pos=0, angle=0, movable=False) # y = 0 lines for the plots
+        
         self.ui.a_last_shot_graph.plotItem.setLabels(left='dtt', bottom=self.xlabel)
         self.ui.a_last_shot_graph.plotItem.showAxis('top', show=True)
         self.ui.a_last_shot_graph.plotItem.showAxis('right', show=True)
+        self.ui.a_last_shot_graph.addItem(self.zero_line)
 
         self.ui.a_kinetic_graph.plotItem.setLabels(left='dtt', bottom='Time ({0})'.format(self.timeunits))
         self.ui.a_kinetic_graph.plotItem.showAxis('top', show=True)
         self.ui.a_kinetic_graph.plotItem.showAxis('right', show=True)
+        self.ui.a_kinetic_graph.addItem(self.zero_line)
         
         self.ui.a_spectra_graph.plotItem.setLabels(left='dtt', bottom=self.xlabel)
         self.ui.a_spectra_graph.plotItem.showAxis('top', show=True)
         self.ui.a_spectra_graph.plotItem.showAxis('right', show=True)
+        self.ui.a_spectra_graph.addItem(self.zero_line)
         
         self.ui.d_last_shot_graph.plotItem.setLabels(left='dtt', bottom=self.xlabel) 
         self.ui.d_last_shot_graph.plotItem.showAxis('top', show=True)
         self.ui.d_last_shot_graph.plotItem.showAxis('right', show=True)
+        self.ui.d_last_shot_graph.addItem(self.zero_line)
         
         self.ui.d_error_graph.plotItem.setLabels(left='Log(Error)', bottom=self.xlabel)
         self.ui.d_error_graph.plotItem.showAxis('top', show=True)
@@ -986,6 +992,7 @@ class Application(QtGui.QMainWindow):
         self.ui.d_probe_ref_graph.plotItem.setLabels(left='Counts', bottom=self.xlabel)
         self.ui.d_probe_ref_graph.plotItem.showAxis('top', show=True)
         self.ui.d_probe_ref_graph.plotItem.showAxis('right', show=True)
+        self.ui.d_probe_ref_graph.addItem(self.zero_line)
         
         self.probe_error_region = pg.FillBetweenItem(brush=(255, 0, 0, 50))
         #self.ui.d_probe_ref_graph.addItem(self.probe_error_region)

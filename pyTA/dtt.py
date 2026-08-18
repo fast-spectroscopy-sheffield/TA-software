@@ -138,7 +138,7 @@ class DataProcessing:
         For now, calculate as a 'separate' dtt_B_matrix to enable a comparison
         '''
         high_dtt = False
-        self.dtt_B_matrix = self.probe_delta_mean - self.reference_delta_mean @ B)/(self.probe_off_mean) + 1
+        self.dtt_B_matrix = (self.probe_delta_mean - self.reference_delta_mean @ B)/(self.probe_off_mean) + 1
         fin_dtt = self.dtt_B_matrix[np.isfinite(self.dtt_B_matrix)]
         if fin_dtt.size == 0 or np.abs(fin_dtt[cutoff[0]:cutoff[1]]).max() > max_dtt:
             high_dtt = True
