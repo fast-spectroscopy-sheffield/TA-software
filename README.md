@@ -4,8 +4,6 @@ Software for the transient absorption setup.
 ### pyTA ###
 Measurement setup and data acquisition.
 
-_Thanks to the OE group at Cambridge for some of the original code._
-
 ### hdf5-converter ###
 Conversion of data files (.hdf5) to useful things.
 
@@ -63,3 +61,9 @@ which will update `gui.py`.
  - [ ] Option for saving the useful logs/histories to a .txt file?
  - [ ] Virtual or mock mode (of the whole software, or individual parts – detector, delays, ...), which may enable troubleshooting without the prescence of hardware
  - [ ] Option for $\Delta A$ view in the software, in addition to the current $\Delta T/T$ (...though maybe the logarithm required is computationally expensive?)
+
+## acknowledgements ##
+
+Many thanks to:
+- The Optoelectronics group at the University of Cambridge, UK for some of the original code.
+- Maximilian M. Horn and others from the FemtoMat group (Prof. Natalie Banerji) at the University of Bern, Switzerland for sharing their python code for B-matrix related functions, and for their exceptionally clear related publication (Rev. Sci. Instrum. __97__, 073001 (2026); doi: 10.1063/5.0334487).

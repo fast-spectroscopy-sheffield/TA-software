@@ -1650,6 +1650,41 @@ background-color: rgb(0, 0, 0);</string>
         <string>Scale Factor</string>
        </property>
       </widget>
+      <widget class="QCheckBox" name="d_use_B_matrix_test">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>30</y>
+         <width>131</width>
+         <height>17</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 0, 0);</string>
+       </property>
+       <property name="text">
+        <string>B-matrix referencing</string>
+       </property>
+       <property name="autoExclusive">
+        <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_80">
+       <property name="geometry">
+        <rect>
+         <x>210</x>
+         <y>40</y>
+         <width>111</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 0, 0);</string>
+       </property>
+       <property name="text">
+        <string>(only testing for now)</string>
+       </property>
+      </widget>
      </widget>
      <widget class="QGroupBox" name="d_calib_box">
       <property name="geometry">

@@ -1142,6 +1142,12 @@ class Application(QtGui.QMainWindow):
         
     def d_ls_plot(self):
         self.ui.d_last_shot_graph.plotItem.plot(self.plot_waves, self.plot_ls, pen='b', clear=True)
+        if self.ui.d_use_B_matrix_test.isChecked() is True: # if the B-matrix tester is on...
+            try:
+                self.ui.d_last_shot_graph.plotItem.plot(self.plot_waves, self.current_data.dtt[:], pen='r', clear=True)
+                # Not bothering with cutoff etc. for now
+            except:
+                self.append_history('Error with the B-matrix plotting')
         return
         
     def message_block(self):
@@ -1542,11 +1548,21 @@ class Application(QtGui.QMainWindow):
         if self.ui.d_use_reference.isChecked() is True:
             self.current_data.correct_probe_with_reference()
             self.current_data.average_refd_shots()
-            self.current_data.calcuate_dtt(use_reference=True,cutoff=self.cutoff,use_avg_off_shots=self.ui.d_use_avg_off_shots.isChecked())
+            self.current_data.calcuate_dtt(use_reference=True,cutoff=self.cutoff,use_avg_off_shots=self.ui.d_use_avg_off_shots.isChecked()) # @todo why does this not bother with high dtt?
             self.current_data.calculate_dtt_error(use_reference=True,use_avg_off_shots=self.ui.d_use_avg_off_shots.isChecked())
         else:
             self.current_data.calcuate_dtt(use_reference=False,cutoff=self.cutoff,use_avg_off_shots=self.ui.d_use_avg_off_shots.isChecked())
             self.current_data.calculate_dtt_error(use_reference=False,use_avg_off_shots=self.ui.d_use_avg_off_shots.isChecked())
+        
+        # Now, B-matrix stuff...
+        if self.ui.d_use_B_matrix_test.isChecked() is True: # if the B-matrix tester is on...
+            try:
+                self.current_data.delta_shots()
+                self.current_data.average_delta_shots()
+                self.current_data.calculate_B_matrix()
+                self.current_data.calculate_dtt_B_matrix(cutoff=self.cutoff)
+            except:
+                self.append_history('Error with the B-matrix calculation')
 
         self.create_plot_waves_and_times()
         self.d_ls_plot()
