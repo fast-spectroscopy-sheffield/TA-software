@@ -1,4 +1,4 @@
-use cutoff:1.0
+use cutoff:0.0
 cutoff pixel low:150.0
 cutoff pixel high:470.0
 use calib:1.0
@@ -28,7 +28,7 @@ d threshold pixel:1.0
 d threshold value:20000.0
 d time:10.0
 d jogstep:0.1
-dark correction shot factor:4
+dark correction shot factor:1
 motor coosc index 1:
 motor coosc index 2:
 motor coosc zero 1:5.5

@@ -92,7 +92,6 @@ class DataProcessing:
         self.probe_delta_array = self.probe_on_array - self.probe_off_array
         self.reference_delta_array = self.reference_on_array - self.reference_off_array
         # RHS of Step I
-        # @todo this looks inefficient. Can it be improved?
         self.probe_off_delta_array = np.zeros((int(self.probe_off_array.shape[0]/2), self.probe_off_array.shape[1]))
         self.reference_off_delta_array = np.zeros((int(self.reference_off_array.shape[0]/2), self.reference_off_array.shape[1]))
         for i in range(self.probe_off_delta_array.shape[0]):
@@ -107,7 +106,7 @@ class DataProcessing:
         Step II in the flowchart from Horn et al. 2026
         '''
         self.probe_delta_mean = self.probe_delta_array.mean(axis=0)
-        self.reference_delta_mean = self.reference_delta.mean(axis=0)
+        self.reference_delta_mean = self.reference_delta_array.mean(axis=0)
         # ...the next line is also in the above average_shots function
         # @todo get rid of one of them
         self.probe_off_mean = self.probe_off_array.mean(axis=0)
@@ -116,8 +115,10 @@ class DataProcessing:
     def calculate_B_matrix(self):
         '''
         Step III and IV in the flowchart from Horn et al. 2026
+        @todo the cross-variance step is currently very slow...
         '''
         # Step III, cross-covariance
+        print('pre-cross-covariance '+str(datetime.datetime.now()))
         m = self.probe_off_delta_array.shape[0]
         n = self.reference_off_delta_array.shape[0]
         C = np.zeros((m, n))
@@ -125,9 +126,11 @@ class DataProcessing:
             for jj in range(n):
                 r = np.cov(self.probe_off_delta_array[jj, :], self.reference_off_delta_array[ii, :])
                 C[ii, jj] = r[0, 1]
+        print('pre-inverted-covariance '+str(datetime.datetime.now()))
         # Step III, inverted covariance
         A = np.linalg.inv(np.cov(self.reference_off_delta_array))
         # Step IV, calculate B-matrix by matrix multiplication
+        print('pre-B-matrix '+str(datetime.datetime.now()))
         self.B_matrix = A @ C
         return
     
@@ -138,11 +141,12 @@ class DataProcessing:
         For now, calculate as a 'separate' dtt_B_matrix to enable a comparison
         '''
         high_dtt = False
-        self.dtt_B_matrix = (self.probe_delta_mean - self.reference_delta_mean @ B)/(self.probe_off_mean) + 1
+        self.dtt_B_matrix = (self.probe_delta_mean - self.reference_delta_mean @ self.B_matrix)/(self.probe_off_mean) + 1
         fin_dtt = self.dtt_B_matrix[np.isfinite(self.dtt_B_matrix)]
         if fin_dtt.size == 0 or np.abs(fin_dtt[cutoff[0]:cutoff[1]]).max() > max_dtt:
             high_dtt = True
             print('High dtt for B-matrix! '+str(datetime.datetime.now()))
+        print('post-dtt_by_B-matrix '+str(datetime.datetime.now()))
         return high_dtt
         
     def sub_bgd(self, bgd, tau_flip_request=False):

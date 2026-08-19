@@ -958,28 +958,22 @@ class Application(QtGui.QMainWindow):
         self.ui.d_history.appendPlainText(message)
         return
                        
-    def create_plots(self):
-        self.zero_line = pg.InfiniteLine(pos=0, angle=0, movable=False) # y = 0 lines for the plots
-        
+    def create_plots(self):  
         self.ui.a_last_shot_graph.plotItem.setLabels(left='dtt', bottom=self.xlabel)
         self.ui.a_last_shot_graph.plotItem.showAxis('top', show=True)
         self.ui.a_last_shot_graph.plotItem.showAxis('right', show=True)
-        self.ui.a_last_shot_graph.addItem(self.zero_line)
 
         self.ui.a_kinetic_graph.plotItem.setLabels(left='dtt', bottom='Time ({0})'.format(self.timeunits))
         self.ui.a_kinetic_graph.plotItem.showAxis('top', show=True)
         self.ui.a_kinetic_graph.plotItem.showAxis('right', show=True)
-        self.ui.a_kinetic_graph.addItem(self.zero_line)
         
         self.ui.a_spectra_graph.plotItem.setLabels(left='dtt', bottom=self.xlabel)
         self.ui.a_spectra_graph.plotItem.showAxis('top', show=True)
         self.ui.a_spectra_graph.plotItem.showAxis('right', show=True)
-        self.ui.a_spectra_graph.addItem(self.zero_line)
         
         self.ui.d_last_shot_graph.plotItem.setLabels(left='dtt', bottom=self.xlabel) 
         self.ui.d_last_shot_graph.plotItem.showAxis('top', show=True)
         self.ui.d_last_shot_graph.plotItem.showAxis('right', show=True)
-        self.ui.d_last_shot_graph.addItem(self.zero_line)
         
         self.ui.d_error_graph.plotItem.setLabels(left='Log(Error)', bottom=self.xlabel)
         self.ui.d_error_graph.plotItem.showAxis('top', show=True)
@@ -992,7 +986,6 @@ class Application(QtGui.QMainWindow):
         self.ui.d_probe_ref_graph.plotItem.setLabels(left='Counts', bottom=self.xlabel)
         self.ui.d_probe_ref_graph.plotItem.showAxis('top', show=True)
         self.ui.d_probe_ref_graph.plotItem.showAxis('right', show=True)
-        self.ui.d_probe_ref_graph.addItem(self.zero_line)
         
         self.probe_error_region = pg.FillBetweenItem(brush=(255, 0, 0, 50))
         #self.ui.d_probe_ref_graph.addItem(self.probe_error_region)
@@ -1148,13 +1141,18 @@ class Application(QtGui.QMainWindow):
         return
         
     def d_ls_plot(self):
-        self.ui.d_last_shot_graph.plotItem.plot(self.plot_waves, self.plot_ls, pen='b', clear=True)
+        # @todo code in zero lines properly for the plots...
+        # self.ui.a_last_shot_graph.addItem(pg.InfiniteLine(pos=0, angle=0, movable=False)) # zero line
+        for item in self.ui.d_last_shot_graph.plotItem.listDataItems():
+            self.ui.d_last_shot_graph.plotItem.removeItem(item)
+        self.ui.d_last_shot_graph.plotItem.plot(self.plot_waves, self.plot_ls, pen='b', clear=False)
         if self.ui.d_use_B_matrix_test.isChecked() is True: # if the B-matrix tester is on...
             try:
-                self.ui.d_last_shot_graph.plotItem.plot(self.plot_waves, self.current_data.dtt[:], pen='r', clear=True)
+                self.ui.d_last_shot_graph.plotItem.plot(self.plot_waves, self.current_data.dtt_B_matrix[:], pen='r', clear=False)
                 # Not bothering with cutoff etc. for now
-            except:
+            except Exception as e:
                 self.append_history('Error with the B-matrix plotting')
+                self.append_history(str(e))
         return
         
     def message_block(self):
@@ -1568,8 +1566,9 @@ class Application(QtGui.QMainWindow):
                 self.current_data.average_delta_shots()
                 self.current_data.calculate_B_matrix()
                 self.current_data.calculate_dtt_B_matrix(cutoff=self.cutoff)
-            except:
+            except Exception as e:
                 self.append_history('Error with the B-matrix calculation')
+                self.append_history(str(e))
 
         self.create_plot_waves_and_times()
         self.d_ls_plot()
