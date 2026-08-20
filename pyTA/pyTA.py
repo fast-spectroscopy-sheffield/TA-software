@@ -947,10 +947,10 @@ class Application(QtGui.QMainWindow):
     def exec_d_set_linear_corr_btn(self):
         try:
             self.linear_corr = self.bgd.set_linear_pixel_correlation()
-            self.append_history('Successfully set linear pixel correction')
+            self.append_history('Successfully set linear pixel correlation')
             print(self.linear_corr)
         except:
-            self.append_history('Error setting linear pixel correction, line~941')
+            self.append_history('Error setting linear pixel correlation, line~941')
         return
         
     def append_history(self, message):
@@ -1308,7 +1308,7 @@ class Application(QtGui.QMainWindow):
             try:
                 self.current_data.linear_pixel_correlation(self.linear_corr)
             except:
-                self.append_history('Error using linear pixel correction, line~1288')
+                self.append_history('Error using linear pixel correlation, line~1288')
         self.high_trig_std = self.current_data.separate_on_off(self.threshold, self.tau_flip_request)
         if self.ui.a_test_run_btn.isChecked() is False:
             self.current_data.sub_bgd(self.bgd,self.tau_flip_request)
@@ -1370,7 +1370,7 @@ class Application(QtGui.QMainWindow):
             try:
                 self.bgd.linear_pixel_correlation(self.linear_corr)
             except:
-                self.append_history('Error using linear pixel correction, line~1350')
+                self.append_history('Error using linear pixel correlation, line~1350')
         self.bgd.separate_on_off(self.threshold)
         self.bgd.average_shots() 
         self.run()          
@@ -1543,7 +1543,7 @@ class Application(QtGui.QMainWindow):
             try:
                 self.current_data.linear_pixel_correlation(self.linear_corr)
             except:
-                self.append_history('Error using linear pixel correction, line~1523')
+                self.append_history('Error using linear pixel correlation, line~1523')
         self.current_data.separate_on_off(self.threshold,self.tau_flip_request)
         if self.ui.a_test_run_btn.isChecked() is False:
             self.current_data.sub_bgd(self.bgd,self.tau_flip_request)
@@ -1562,10 +1562,9 @@ class Application(QtGui.QMainWindow):
         # Now, B-matrix stuff...
         if self.ui.d_use_B_matrix_test.isChecked() is True: # if the B-matrix tester is on...
             try:
-                self.current_data.delta_shots()
-                self.current_data.average_delta_shots()
+                self.current_data.delta_shots(cutoff=self.cutoff)
                 self.current_data.calculate_B_matrix()
-                self.current_data.calculate_dtt_B_matrix(cutoff=self.cutoff)
+                self.current_data.calculate_dtt_B_matrix()
             except Exception as e:
                 self.append_history('Error with the B-matrix calculation')
                 self.append_history(str(e))
@@ -1598,7 +1597,7 @@ class Application(QtGui.QMainWindow):
             try:
                 self.bgd.linear_pixel_correlation(self.linear_corr)
             except:
-                self.append_history('Error using linear pixel correction, line~1567')
+                self.append_history('Error using linear pixel correlation, line~1567')
         self.bgd.separate_on_off(self.threshold)
         self.bgd.average_shots()
         self.d_run()          

@@ -83,39 +83,43 @@ class DataProcessing:
         self.reference_off = self.reference_off_array.mean(axis=0)
         return
         
-    def delta_shots(self):
+    def delta_shots(self, use_cutoff=True, cutoff=[200,300]):
         '''
-        Step I in the flowchat from Horn et al. 2026
-        @todo question: does this negate the background correction? It probably does, right?
+        Step I and II in the flowchat from Horn et al. 2026
+        Note, Horn et al. do usual background correction prior to B-matrix referencing.
+        Cutoff may be neccessary to speed up the calculations.
         '''
+        # Pre-step, cutoff. Use local variables to avoid overwriting those attached to self (global).
+        if use_cutoff == False:
+            cutoff = [200,300]
+            print('Cutoff not checked; defaulted to cutoff=[200,300] for B-matrix')
+        probe_on_array = self.probe_on_array[:,cutoff[0]:cutoff[1]]
+        probe_off_array = self.probe_on_array[:,cutoff[0]:cutoff[1]]
+        reference_on_array = self.reference_on_array[:,cutoff[0]:cutoff[1]]
+        reference_off_array = self.reference_off_array[:,cutoff[0]:cutoff[1]]
         # LHS of Step I
-        self.probe_delta_array = self.probe_on_array - self.probe_off_array
-        self.reference_delta_array = self.reference_on_array - self.reference_off_array
+        self.probe_delta_array = probe_on_array - probe_off_array
+        self.reference_delta_array = reference_on_array - reference_off_array
         # RHS of Step I
-        self.probe_off_delta_array = np.zeros((int(self.probe_off_array.shape[0]/2), self.probe_off_array.shape[1]))
-        self.reference_off_delta_array = np.zeros((int(self.reference_off_array.shape[0]/2), self.reference_off_array.shape[1]))
+        self.probe_off_delta_array = np.zeros((int(probe_off_array.shape[0]/2), probe_off_array.shape[1])) # int accounts for halves, int(140.5) = 141 etc.
+        self.reference_off_delta_array = np.zeros((int(reference_off_array.shape[0]/2), reference_off_array.shape[1]))
         for i in range(self.probe_off_delta_array.shape[0]):
-            self.probe_off_delta_array[i, :] = self.probe_off_array[2 * i, :] - self.probe_off_array[2 * i + 1, :]
-            self.reference_off_delta_array[i, :] = self.reference_off_array[2 * i, :] - self.reference_off_array[2 * i + 1, :]
+            self.probe_off_delta_array[i,:] = probe_off_array[2*i,:] - probe_off_array[2*i+1,:]
+            self.reference_off_delta_array[i,:] = reference_off_array[2*i,:] - reference_off_array[2*i+1,:]
         self.probe_off_delta_array = self.probe_off_delta_array.T
         self.reference_off_delta_array = self.reference_off_delta_array.T
-        return
-    
-    def average_delta_shots(self):
-        '''
-        Step II in the flowchart from Horn et al. 2026
-        '''
+        # Now Step II
         self.probe_delta_mean = self.probe_delta_array.mean(axis=0)
         self.reference_delta_mean = self.reference_delta_array.mean(axis=0)
-        # ...the next line is also in the above average_shots function
-        # @todo get rid of one of them
-        self.probe_off_mean = self.probe_off_array.mean(axis=0)
+        # ...the next line is also in the above average_shots function. @todo could get rid of one...
+        self.probe_off_mean = probe_off_array.mean(axis=0)
         return
     
     def calculate_B_matrix(self):
         '''
         Step III and IV in the flowchart from Horn et al. 2026
         @todo the cross-variance step is currently very slow...
+        Should try the DLL from Horn et al. 2026.
         '''
         # Step III, cross-covariance
         print('pre-cross-covariance '+str(datetime.datetime.now()))
@@ -134,16 +138,16 @@ class DataProcessing:
         self.B_matrix = A @ C
         return
     
-    def calculate_dtt_B_matrix(self, cutoff=[0, 100], max_dtt=1):
+    def calculate_dtt_B_matrix(self, max_dtt=1):
         '''
         Step V in the flowchart from Horn et al. 2026
         @todo need to figure out how to collate this with the dtt calculated ratiometrically
         For now, calculate as a 'separate' dtt_B_matrix to enable a comparison
         '''
         high_dtt = False
-        self.dtt_B_matrix = (self.probe_delta_mean - self.reference_delta_mean @ self.B_matrix)/(self.probe_off_mean) + 1
+        self.dtt_B_matrix = (self.probe_delta_mean - self.reference_delta_mean @ self.B_matrix)/(self.probe_off_mean)
         fin_dtt = self.dtt_B_matrix[np.isfinite(self.dtt_B_matrix)]
-        if fin_dtt.size == 0 or np.abs(fin_dtt[cutoff[0]:cutoff[1]]).max() > max_dtt:
+        if fin_dtt.size == 0 or np.abs(fin_dtt).max() > max_dtt:
             high_dtt = True
             print('High dtt for B-matrix! '+str(datetime.datetime.now()))
         print('post-dtt_by_B-matrix '+str(datetime.datetime.now()))
