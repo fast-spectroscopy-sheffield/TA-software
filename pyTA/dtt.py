@@ -88,13 +88,16 @@ class DataProcessing:
         Step I and II in the flowchat from Horn et al. 2026
         Note, Horn et al. do usual background correction prior to B-matrix referencing.
         Cutoff may be neccessary to speed up the calculations.
+        @todo need to fix 'leakage' from reference manipulation for the ratiometric
+        method into B-matrix code. If both are 'checked' we get huge dT/T by the
+        B-matrix method. If manipulation is unchecked, it looks more sensible.
         '''
         # Pre-step, cutoff. Use local variables to avoid overwriting those attached to self (global).
         if use_cutoff == False:
             cutoff = [200,300]
             print('Cutoff not checked; defaulted to cutoff=[200,300] for B-matrix')
         probe_on_array = self.probe_on_array[:,cutoff[0]:cutoff[1]]
-        probe_off_array = self.probe_on_array[:,cutoff[0]:cutoff[1]]
+        probe_off_array = self.probe_off_array[:,cutoff[0]:cutoff[1]]
         reference_on_array = self.reference_on_array[:,cutoff[0]:cutoff[1]]
         reference_off_array = self.reference_off_array[:,cutoff[0]:cutoff[1]]
         # LHS of Step I
@@ -131,11 +134,13 @@ class DataProcessing:
                 r = np.cov(self.probe_off_delta_array[jj, :], self.reference_off_delta_array[ii, :])
                 C[ii, jj] = r[0, 1]
         print('pre-inverted-covariance '+str(datetime.datetime.now()))
+        
         # Step III, inverted covariance
         A = np.linalg.inv(np.cov(self.reference_off_delta_array))
+        
         # Step IV, calculate B-matrix by matrix multiplication
         print('pre-B-matrix '+str(datetime.datetime.now()))
-        self.B_matrix = A @ C
+        self.B_matrix = np.matmul(A, C)
         return
     
     def calculate_dtt_B_matrix(self, max_dtt=1):
@@ -145,7 +150,7 @@ class DataProcessing:
         For now, calculate as a 'separate' dtt_B_matrix to enable a comparison
         '''
         high_dtt = False
-        self.dtt_B_matrix = (self.probe_delta_mean - self.reference_delta_mean @ self.B_matrix)/(self.probe_off_mean)
+        self.dtt_B_matrix = (self.probe_delta_mean - np.matmul(self.reference_delta_mean,self.B_matrix))/(self.probe_off_mean)
         fin_dtt = self.dtt_B_matrix[np.isfinite(self.dtt_B_matrix)]
         if fin_dtt.size == 0 or np.abs(fin_dtt).max() > max_dtt:
             high_dtt = True
