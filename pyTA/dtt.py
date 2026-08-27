@@ -1,5 +1,30 @@
+# general
 import datetime
+import os
+
+# data processing
 import numpy as np
+
+# for DLL for cross-covariance calculation (B-matrix)
+import ctypes
+
+# load DLL
+dll = ctypes.CDLL(os.path.join(os.getcwd(),'dll','CrossCovarianceMH.dll'))
+
+# define pointer type for 1D contiguous 64-bit float arrays
+double_array_ptr = np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags='C_CONTIGUOUS')
+
+# specify the DLL function argument types and return type, using the above pointer
+dll.cross_cov.argtypes = [
+    ctypes.c_int,       # size_a (pixels)
+    ctypes.c_int,       # size_b (pixels)
+    ctypes.c_int,       # nsamples (number of shots / 2)
+    double_array_ptr,   # matrix_a (input)
+    double_array_ptr,   # matrix_b (input)
+    double_array_ptr    # matrix_c (input; output buffer)
+]
+dll.cross_cov.restype = None # cross_cov itself doesn't return anything; just manipulates matrix_c
+# matrix_c corresponds to cov(matrix_b, matrix a)
 
 
 class DataProcessing:
@@ -108,7 +133,8 @@ class DataProcessing:
         self.reference_off_delta_array = np.zeros((int(reference_off_array.shape[0]/2), reference_off_array.shape[1]))
         for i in range(self.probe_off_delta_array.shape[0]):
             self.probe_off_delta_array[i,:] = probe_off_array[2*i,:] - probe_off_array[2*i+1,:]
-            self.reference_off_delta_array[i,:] = reference_off_array[2*i,:] - reference_off_array[2*i+1,:]
+        for j in range(self.reference_off_delta_array.shape[0]):
+            self.reference_off_delta_array[j,:] = reference_off_array[2*j,:] - reference_off_array[2*j+1,:]
         self.probe_off_delta_array = self.probe_off_delta_array.T
         self.reference_off_delta_array = self.reference_off_delta_array.T
         # Now Step II
@@ -118,21 +144,51 @@ class DataProcessing:
         self.probe_off_mean = probe_off_array.mean(axis=0)
         return
     
-    def calculate_B_matrix(self):
+    def calculate_B_matrix_by_np(self):
         '''
         Step III and IV in the flowchart from Horn et al. 2026
-        @todo the cross-variance step is currently very slow...
-        Should try the DLL from Horn et al. 2026.
+        The cross-covariance step is very slow by numpy (np)...
+        Replaced by a function below that uses a DLL for that step.
         '''
         # Step III, cross-covariance
         print('pre-cross-covariance '+str(datetime.datetime.now()))
-        m = self.probe_off_delta_array.shape[0]
-        n = self.reference_off_delta_array.shape[0]
+        m = self.reference_off_delta_array.shape[0]
+        n = self.probe_off_delta_array.shape[0]
         C = np.zeros((m, n))
         for ii in range(m):
             for jj in range(n):
                 r = np.cov(self.probe_off_delta_array[jj, :], self.reference_off_delta_array[ii, :])
                 C[ii, jj] = r[0, 1]
+        print('pre-inverted-covariance '+str(datetime.datetime.now()))
+        
+        # Step III, inverted covariance
+        A = np.linalg.inv(np.cov(self.reference_off_delta_array))
+        
+        # Step IV, calculate B-matrix by matrix multiplication
+        print('pre-B-matrix '+str(datetime.datetime.now()))
+        self.B_matrix_by_np = np.matmul(A, C)
+        return
+    
+    def calculate_B_matrix(self):
+        '''
+        Step III and IV in the flowchart from Horn et al. 2026
+        This uses the DLL provided via Horn et al. 2026 for cross-covariance
+        '''
+        # Step III, cross-covariance
+        print('pre-cross-covariance '+str(datetime.datetime.now()))
+        m, M = self.reference_off_delta_array.shape
+        n, _ = self.probe_off_delta_array.shape
+        C = np.zeros((m, n), dtype=np.float64) # input-mutate-to-output matrix
+        dll.cross_cov(
+            n,
+            m,
+            M,
+            self.probe_off_delta_array.ravel(),
+            self.reference_off_delta_array.ravel(),
+            C.ravel()
+        )
+        # Note C corresponds to cov(reference_off_delta_array,probe_off_delta_array)
+        # i.e. the black-outline box of Step III
         print('pre-inverted-covariance '+str(datetime.datetime.now()))
         
         # Step III, inverted covariance
@@ -179,7 +235,7 @@ class DataProcessing:
            3. Multiplies the x-axis by "nfScaleFactor", to scale the horizontal axis
            4. Re-centers the axis to its initial position
            5. Adds a fixed horizontal offset
-           6. Interpolates the Y values mapped onto the ajusted horizontal
+           6. Interpolates the Y values mapped onto the adjusted horizontal
               axis back onto an unmodified axis, to fit the probe spectra
         """
         vs, vo, ho, sc, sf = refman

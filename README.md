@@ -1,5 +1,5 @@
 # TA-software
-Software for the transient absorption setup.
+Software for the transient absorption (TA) setup.
 
 ### pyTA ###
 Measurement setup and data acquisition.
@@ -66,4 +66,4 @@ which will update `gui.py`.
 
 Many thanks to:
 - The Optoelectronics group at the University of Cambridge, UK for some of the original code.
-- Maximilian M. Horn and others from the FemtoMat group (Prof. Natalie Banerji) at the University of Bern, Switzerland for sharing their python code for B-matrix related functions, and for their exceptionally clear related publication (Rev. Sci. Instrum. __97__, 073001 (2026); doi: 10.1063/5.0334487).
+- Maximilian M. Horn and others from the FemtoMat group (Prof. Natalie Banerji) at the University of Bern, Switzerland for their exceptionally clear publication on B-matrix implementation in TA (Rev. Sci. Instrum. __97__, 073001 (2026); doi: 10.1063/5.0334487), and also for sharing their python code and 'fast cross-covariance' DLL `dll\CrossCovarianceMH.dll` (on the UniBe BORIS Portal, doi: https://doi.org/10.48620/97448).
