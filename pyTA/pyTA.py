@@ -1570,6 +1570,19 @@ class Application(QtGui.QMainWindow):
             except Exception as e:
                 self.append_history('Error with the B-matrix calculation')
                 self.append_history(str(e))
+                
+        # If saving 'next shot' to CSV files...
+        if self.ui.d_save_btn.isChecked() is True:
+            self.ui.d_save_btn.setChecked(False)
+            try:
+                np.savetxt(os.path.join(self.datafolder, 'probe_on_array.csv'), self.current_data.probe_on_array, delimiter=',')
+                np.savetxt(os.path.join(self.datafolder, 'probe_off_array.csv'), self.current_data.probe_off_array, delimiter=',')
+                np.savetxt(os.path.join(self.datafolder, 'reference_on_array.csv'), self.current_data.reference_on_array, delimiter=',')
+                np.savetxt(os.path.join(self.datafolder, 'reference_off_array.csv'), self.current_data.reference_off_array, delimiter=',')
+                self.append_history('Last ' + str(self.num_shots) + ' shots saved to ' + str(self.datafolder) + ' -- please note: rows are shots, columns are pixel number, and these are saved post-(background, reference manipulation, pixel correlation, etc.)')
+            except Exception as e:
+                self.append_history('Error with saving shots')
+                self.append_history(str(e))
 
         self.create_plot_waves_and_times()
         self.d_ls_plot()

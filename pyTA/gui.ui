@@ -2117,6 +2117,23 @@ background-color: rgb(0, 0, 0);</string>
         <string>Stop</string>
        </property>
       </widget>
+      <widget class="QCheckBox" name="d_save_btn">
+       <property name="geometry">
+        <rect>
+         <x>240</x>
+         <y>30</y>
+         <width>91</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(0, 170, 255);</string>
+       </property>
+       <property name="text">
+        <string>Save Next N
+Shots to CSVs</string>
+       </property>
+      </widget>
      </widget>
      <widget class="QGroupBox" name="d_other_box">
       <property name="geometry">

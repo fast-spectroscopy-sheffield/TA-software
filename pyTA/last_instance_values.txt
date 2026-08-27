@@ -15,7 +15,7 @@ distribution:0.0
 tstart:-10.0
 tend:10000.0
 num tpoints:200.0
-num shots:200.0
+num shots:10000.0
 num sweeps:5.0
 d use ref manip:1.0
 d display mode spectra:0.0
