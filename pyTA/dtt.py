@@ -151,7 +151,7 @@ class DataProcessing:
         Replaced by a function below that uses a DLL for that step.
         '''
         # Step III, cross-covariance
-        print('pre-cross-covariance '+str(datetime.datetime.now()))
+        # print('pre-cross-covariance '+str(datetime.datetime.now()))
         m = self.reference_off_delta_array.shape[0]
         n = self.probe_off_delta_array.shape[0]
         C = np.zeros((m, n))
@@ -159,13 +159,13 @@ class DataProcessing:
             for jj in range(n):
                 r = np.cov(self.probe_off_delta_array[jj, :], self.reference_off_delta_array[ii, :])
                 C[ii, jj] = r[0, 1]
-        print('pre-inverted-covariance '+str(datetime.datetime.now()))
+        # print('pre-inverted-covariance '+str(datetime.datetime.now()))
         
         # Step III, inverted covariance
         A = np.linalg.inv(np.cov(self.reference_off_delta_array))
         
         # Step IV, calculate B-matrix by matrix multiplication
-        print('pre-B-matrix '+str(datetime.datetime.now()))
+        # print('pre-B-matrix '+str(datetime.datetime.now()))
         self.B_matrix_by_np = np.matmul(A, C)
         return
     
@@ -175,7 +175,7 @@ class DataProcessing:
         This uses the DLL provided via Horn et al. 2026 for cross-covariance
         '''
         # Step III, cross-covariance
-        print('pre-cross-covariance '+str(datetime.datetime.now()))
+        # print('pre-cross-covariance '+str(datetime.datetime.now()))
         m, M = self.reference_off_delta_array.shape
         n, _ = self.probe_off_delta_array.shape
         C = np.zeros((m, n), dtype=np.float64) # input-mutate-to-output matrix
@@ -189,13 +189,13 @@ class DataProcessing:
         )
         # Note C corresponds to cov(reference_off_delta_array,probe_off_delta_array)
         # i.e. the black-outline box of Step III
-        print('pre-inverted-covariance '+str(datetime.datetime.now()))
+        # print('pre-inverted-covariance '+str(datetime.datetime.now()))
         
         # Step III, inverted covariance
         A = np.linalg.inv(np.cov(self.reference_off_delta_array))
         
         # Step IV, calculate B-matrix by matrix multiplication
-        print('pre-B-matrix '+str(datetime.datetime.now()))
+        # print('pre-B-matrix '+str(datetime.datetime.now()))
         self.B_matrix = np.matmul(A, C)
         return
     
@@ -211,7 +211,7 @@ class DataProcessing:
         if fin_dtt.size == 0 or np.abs(fin_dtt).max() > max_dtt:
             high_dtt = True
             print('High dtt for B-matrix! '+str(datetime.datetime.now()))
-        print('post-dtt_by_B-matrix '+str(datetime.datetime.now()))
+        # print('post-dtt_by_B-matrix '+str(datetime.datetime.now()))
         return high_dtt
         
     def sub_bgd(self, bgd, tau_flip_request=False):

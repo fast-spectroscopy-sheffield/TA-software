@@ -1565,8 +1565,8 @@ class Application(QtGui.QMainWindow):
                 self.current_data.delta_shots(cutoff=self.cutoff)
                 self.current_data.calculate_B_matrix()
                 self.current_data.calculate_dtt_B_matrix()
-                #self.current_data.calculate_B_matrix_by_np()
-                #print(self.current_data.B_matrix_by_np/self.current_data.B_matrix)
+                # self.current_data.calculate_B_matrix_by_np()
+                # print(self.current_data.B_matrix_by_np/self.current_data.B_matrix)
             except Exception as e:
                 self.append_history('Error with the B-matrix calculation')
                 self.append_history(str(e))
