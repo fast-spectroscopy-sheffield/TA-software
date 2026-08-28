@@ -6,19 +6,19 @@ import os
 import numpy as np
 
 # for DLL for cross-covariance calculation (B-matrix)
-import ctypes
+import ctypes as ct
 
 # load DLL
-dll = ctypes.CDLL(os.path.join(os.getcwd(),'dll','CrossCovarianceMH.dll'))
+dll = ct.CDLL(os.path.join(os.getcwd(),'dll','CrossCovarianceMH.dll'))
 
 # define pointer type for 1D contiguous 64-bit float arrays
 double_array_ptr = np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags='C_CONTIGUOUS')
 
 # specify the DLL function argument types and return type, using the above pointer
 dll.cross_cov.argtypes = [
-    ctypes.c_int,       # size_a (pixels)
-    ctypes.c_int,       # size_b (pixels)
-    ctypes.c_int,       # nsamples (number of shots / 2)
+    ct.c_int,       # size_a (pixels)
+    ct.c_int,       # size_b (pixels)
+    ct.c_int,       # nsamples (number of shots / 2)
     double_array_ptr,   # matrix_a (input)
     double_array_ptr,   # matrix_b (input)
     double_array_ptr    # matrix_c (input; output buffer)

@@ -38,7 +38,7 @@ which will update `gui.py`.
 
  - [x] Set up and test NIR detectors for sub-ps TA
  - [x] Set up and test NIR detectors for nsTA
- - [ ] B-matrix referencing (as an option?)
+ - [ ] B-matrix referencing - the maths is all there in `dtt.py`, and is fast thanks to the DLL. Just need to figure out nicer incorporation into the GUI (_Acquisition_ tab), saving it, ...
 
 ### important things to fix ###
 

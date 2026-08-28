@@ -31,8 +31,8 @@ from time import sleep
 import datetime
 
 # hack to get app to display icon properly (Windows OS only?)
-#import ctypes
-#ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('pyTA')
+#import ctypes as ct
+#ct.windll.shell32.SetCurrentProcessExplicitAppUserModelID('pyTA')
 
 
 class Application(QtGui.QMainWindow):
@@ -414,7 +414,7 @@ class Application(QtGui.QMainWindow):
         self.last_instance_values['d time'] = self.ui.d_time.value()
         self.last_instance_values['d jogstep'] = self.ui.d_jogstep_sb.value()
         # self.last_instance_values['motor COM'] = self.motor_comport
-        # @todo there is a weird bug here where if you save self.motor_comport, e.g. as 'COM6', all the last_instance_values.txt entries are recognised as strings (I guess because COM# is definitely a string, not a float). Yields a 'ValueError: invalid literal for int() with base 10' when you start pyTA.py. I've hacked a fix by just not saving the last motor COM port (no entry in the last_instance_values.txt) but a better fix is needed - perhaps use numbers to represent COM ports, similar to the delay type?
+        # @todo there is a weird bug here where if you save self.motor_comport, e.g. as 'COM6', all the last_instance_values.txt entries are recognised as strings (I guess because COM# is definitely a string, not a float). Yields a 'ValueError: invalid literal for int() with base 10' when you start pyTA.py. I've hacked a fix by just not saving the last motor COM port (no entry in the last_instance_values.txt) but a better fix is needed - perhaps use numbers to represent COM ports, similar to the delay type? Or use pickle instead?
         self.last_instance_values['motor coosc index 1'] = self.ui.motor_1_index_spin.currentText()
         self.last_instance_values['motor coosc index 2'] = self.ui.motor_2_index_spin.currentText()
         self.last_instance_values['motor coosc zero 1'] = self.ui.coosc_m1_zero.value()
