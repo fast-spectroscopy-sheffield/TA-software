@@ -1,6 +1,6 @@
-# Current pyTA environment, including newportxps==0.9 package installed by pip for NewportXPS delay stage communication.
+# Clone of the pyTA environment prior to installation of NewportXPS package by pip.
 
-name: pyTA
+name: pyTA_backup
 channels:
   - conda-forge
   - anaconda
@@ -57,6 +57,7 @@ dependencies:
   - sip=4.19.13=py38hd77b12b_0
   - six=1.16.0=pyhd3eb1b0_1
   - sqlite=3.38.3=h2bbff1b_0
+  - typing_extensions=4.1.1=pyha770c72_0
   - vc=14.2=h21ff451_1
   - vs2015_runtime=14.27.29016=h5e58377_2
   - wcwidth=0.2.5=pyhd3eb1b0_0
@@ -64,15 +65,8 @@ dependencies:
   - zipp=3.6.0=pyhd8ed1ab_0
   - zlib=1.2.11=vc14h1cdd9ab_1
   - pip:
-    - bcrypt==5.0.0
-    - cryptography==46.0.5
-    - newportxps==0.9
-    - paramiko==3.5.1
     - pipython==2.8.0.3
-    - pynacl==1.6.2
     - pyserial==3.5
-    - pysftp==0.2.9
     - pyusb==1.2.1
-    - typing-extensions==4.13.2
-prefix: C:\Users\Lab_Test\.conda\envs\pyTA
+prefix: C:\Users\Lab_Test\.conda\envs\pyTA_backup
 
