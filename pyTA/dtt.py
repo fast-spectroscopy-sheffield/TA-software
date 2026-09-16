@@ -215,16 +215,24 @@ class DataProcessing:
         return high_dtt
         
     def sub_bgd(self, bgd, tau_flip_request=False):
+        # @todo test new (2026-08-04) 'else' statement properly in the lab.
+        # (2026-09-16) it made James' PSI data very weird compared to before. Unfixed it.
+        self.probe_on_array = self.probe_on_array - bgd.probe_on
+        self.probe_off_array = self.probe_off_array - bgd.probe_off
+        self.reference_on_array = self.reference_on_array - bgd.reference_on
+        self.reference_off_array = self.reference_off_array - bgd.reference_off
+        '''
         if tau_flip_request is False:
             self.probe_on_array = self.probe_on_array - bgd.probe_on
             self.probe_off_array = self.probe_off_array - bgd.probe_off
             self.reference_on_array = self.reference_on_array - bgd.reference_on
             self.reference_off_array = self.reference_off_array - bgd.reference_off
-        else: # @todo test this new (2026-08-04) 'else' statement in the lab. Does threshold also need to be considered?
+        else:
             self.probe_on_array = self.probe_on_array - bgd.probe_off
             self.probe_off_array = self.probe_off_array - bgd.probe_on
             self.reference_on_array = self.reference_on_array - bgd.reference_off
             self.reference_off_array = self.reference_off_array - bgd.reference_on
+        '''
         return
         
     def manipulate_reference(self, refman):
